@@ -106,9 +106,8 @@
     </main>
 
     <footer class="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-10">
-        <div class="flex flex-col items-center justify-between gap-2 border-t border-zinc-200 pt-6 text-xs text-zinc-400 sm:flex-row">
+        <div class="border-t border-zinc-200 pt-6 text-center text-xs text-zinc-400">
             <p>&copy; {{ date('Y') }} Digital LogBook+ · Universiti Kebangsaan Malaysia</p>
-            <p>Built with Laravel {{ app()->version() }}</p>
         </div>
     </footer>
 </div>
