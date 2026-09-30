@@ -1,6 +1,6 @@
 <x-layouts.app :title="'Week '.$logbook->week_no" :subtitle="$logbook->student->name.' · '.$logbook->entry_date->format('l, j F Y')">
     <x-slot:actions>
-        <a href="{{ route('logbooks.index') }}" class="btn btn-secondary"><x-icon name="arrow-left" class="h-4 w-4" /> <span class="hidden sm:inline">All entries</span></a>
+        <a href="{{ route('logbooks.index') }}" class="btn btn-secondary"><x-icon name="list" class="h-4 w-4" /> <span class="hidden sm:inline">View all entries</span></a>
         @can('update', $logbook)
             <a href="{{ route('logbooks.edit', $logbook) }}" class="btn btn-primary"><x-icon name="pencil" class="h-4 w-4" /> Edit</a>
         @endcan

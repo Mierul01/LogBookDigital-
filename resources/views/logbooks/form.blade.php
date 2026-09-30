@@ -3,7 +3,7 @@
 <x-layouts.app :title="$editing ? 'Edit Week '.$logbook->week_no : 'New Logbook Entry'"
                subtitle="Log Book Mingguan · record what you did and discussed this week">
     <x-slot:actions>
-        <a href="{{ $editing ? route('logbooks.show', $logbook) : route('logbooks.index') }}" class="btn btn-secondary"><x-icon name="arrow-left" class="h-4 w-4" /> <span class="hidden sm:inline">Back</span></a>
+        <a href="{{ route('logbooks.index') }}" class="btn btn-secondary"><x-icon name="list" class="h-4 w-4" /> <span class="hidden sm:inline">View all entries</span></a>
     </x-slot:actions>
 
     <form method="POST" action="{{ $editing ? route('logbooks.update', $logbook) : route('logbooks.store') }}" class="grid gap-8 lg:grid-cols-3"

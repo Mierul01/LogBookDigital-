@@ -3,7 +3,7 @@
 <x-layouts.app :title="$editing ? 'Edit Student' : 'Add Student'"
                :subtitle="$editing ? $student->name.' · '.$student->username : 'Create a login for a student you supervise'">
     <x-slot:actions>
-        <a href="{{ route('students.index') }}" class="btn btn-secondary"><x-icon name="arrow-left" class="h-4 w-4" /> <span class="hidden sm:inline">Back</span></a>
+        <a href="{{ route('students.index') }}" class="btn btn-secondary"><x-icon name="list" class="h-4 w-4" /> <span class="hidden sm:inline">View all students</span></a>
     </x-slot:actions>
 
     <div class="grid gap-8 lg:grid-cols-3">
