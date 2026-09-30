@@ -22,18 +22,16 @@
                 </div>
                 <div class="grid gap-6 p-6 sm:grid-cols-2">
                     <x-field name="week_no" label="Week no.">
-                        <select id="week_no" name="week_no" required @class(['input', 'input-error' => $errors->has('week_no')])>
+                        <select id="week_no" name="week_no" required data-select @class(['input', 'input-error' => $errors->has('week_no')])>
                             @foreach (range(1, App\Models\Logbook::MAX_WEEKS) as $week)
-                                <option value="{{ $week }}" @selected(old('week_no', $logbook->week_no) == $week) @disabled(in_array($week, $usedWeeks))>
-                                    Week {{ $week }}{{ in_array($week, $usedWeeks) ? ' · already logged' : '' }}
-                                </option>
+                                <option value="{{ $week }}" @selected(old('week_no', $logbook->week_no) == $week)
+                                        @disabled(in_array($week, $usedWeeks)) @if (in_array($week, $usedWeeks)) data-badge="Logged" @endif>Week {{ $week }}</option>
                             @endforeach
                         </select>
                     </x-field>
                     <x-field name="entry_date" label="Tarikh (Date)">
-                        <input id="entry_date" name="entry_date" type="date" required
-                               value="{{ old('entry_date', $logbook->entry_date?->format('Y-m-d')) }}"
-                               @class(['input', 'input-error' => $errors->has('entry_date')])>
+                        <x-icon-input icon="calendar" name="entry_date" required data-datepicker placeholder="Pick a date"
+                                      value="{{ old('entry_date', $logbook->entry_date?->format('Y-m-d')) }}" />
                     </x-field>
                 </div>
             </section>

@@ -23,7 +23,7 @@
         <div class="flex items-center gap-3">
             @if ($user->isSupervisor() && $students->isNotEmpty())
                 <input type="hidden" name="status" value="{{ $filters['status'] }}">
-                <select name="student" onchange="this.form.submit()" class="input w-auto min-w-56">
+                <select name="student" onchange="this.form.submit()" data-select class="input w-auto min-w-64">
                     <option value="">All students</option>
                     @foreach ($students as $s)
                         <option value="{{ $s->id }}" @selected($filters['student'] == $s->id)>{{ $s->name }} ({{ $s->username }})</option>

@@ -1,5 +1,56 @@
 import './bootstrap';
 import SignaturePad from 'signature_pad';
+import TomSelect from 'tom-select';
+import flatpickr from 'flatpickr';
+
+const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const checkIcon = '<svg class="option-check" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>';
+
+// Styled dropdowns. A disabled <option> can carry a data-badge label
+// (e.g. "Logged") that is shown as a pill in the menu.
+document.querySelectorAll('select[data-select]').forEach((select) => {
+    const badges = Object.fromEntries([...select.options].map((o) => [o.value, o.dataset.badge]));
+
+    new TomSelect(select, {
+        controlInput: null,
+        maxOptions: null,
+        allowEmptyOption: true,
+        render: {
+            option: (data, escape) => {
+                const badge = badges[data.value];
+                return `<div>${escape(data.text)}${badge ? `<span class="option-badge">${escapeHtml(badge)}</span>` : checkIcon}</div>`;
+            },
+            item: (data, escape) => `<div>${escape(data.text)}</div>`,
+        },
+        onInitialize() {
+            // Tom Select copies the <select>'s classes onto its wrapper; the
+            // field look comes from .ts-control instead, so drop .input.
+            this.wrapper.classList.remove('input');
+        },
+    });
+});
+
+// Calendar date picker. The form still submits Y-m-d; the user sees a friendly date.
+document.querySelectorAll('input[data-datepicker]').forEach((input) => {
+    flatpickr(input, {
+        dateFormat: 'Y-m-d',
+        altInput: true,
+        altFormat: 'l, j F Y',
+        disableMobile: true,
+        monthSelectorType: 'static',
+        prevArrow: '<svg viewBox="0 0 24 24"><path d="M15.4 5.4 14 4l-8 8 8 8 1.4-1.4L8.8 12z"/></svg>',
+        nextArrow: '<svg viewBox="0 0 24 24"><path d="M8.6 18.6 10 20l8-8-8-8-1.4 1.4 6.6 6.6z"/></svg>',
+        onReady(_, __, fp) {
+            const footer = document.createElement('div');
+            footer.className = 'flatpickr-footer';
+            footer.innerHTML = '<button type="button" class="text-zinc-500 hover:bg-zinc-100" data-fp-clear>Clear</button>'
+                + '<button type="button" class="bg-brand-600 text-white hover:bg-brand-700" data-fp-today>Today</button>';
+            footer.querySelector('[data-fp-today]').addEventListener('click', () => { fp.setDate(new Date(), true); fp.close(); });
+            footer.querySelector('[data-fp-clear]').addEventListener('click', () => fp.clear());
+            fp.calendarContainer.appendChild(footer);
+        },
+    });
+});
 
 // Supervisor signature box on the logbook review form.
 document.querySelectorAll('[data-signature-pad]').forEach((wrapper) => {

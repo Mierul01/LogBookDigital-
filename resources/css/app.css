@@ -1,3 +1,7 @@
+/* Third-party widget CSS goes in its own low-priority layer so our theme below overrides it. */
+@layer vendor, theme, base, components, utilities;
+@import 'tom-select/dist/css/tom-select.css' layer(vendor);
+@import 'flatpickr/dist/flatpickr.css' layer(vendor);
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -17,6 +21,12 @@
     --color-brand-700: #b91c1c;
     --color-brand-800: #991b1b;
     --color-brand-900: #7f1d1d;
+
+    /* UKM logo blue and gold, used as accents alongside the red brand colour. */
+    --color-ukm-blue: #1d4f9c;
+    --color-ukm-blue-50: #eef3fb;
+    --color-ukm-gold: #f5b41a;
+    --color-ukm-gold-50: #fff8e6;
 
     --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -75,15 +85,25 @@
     }
 
     .label {
-        @apply mb-1.5 block text-sm font-medium text-zinc-700;
+        @apply mb-2 block text-sm font-semibold text-zinc-800;
     }
 
+    /* Soft grey field that turns white with a red glow when focused. */
     .input {
-        @apply block w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 shadow-xs transition duration-200 placeholder:text-zinc-400 hover:border-zinc-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-500;
+        @apply block w-full rounded-xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-900 transition duration-200 ease-(--ease-out-soft) placeholder:text-zinc-400 hover:border-zinc-300 hover:bg-white focus:border-brand-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(220,38,38,0.1)] focus:outline-none disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-100/70 disabled:text-zinc-500;
+    }
+
+    textarea.input {
+        @apply min-h-28 resize-y leading-relaxed;
     }
 
     .input-error {
-        @apply border-red-400 focus:border-red-500 focus:ring-red-500/10;
+        @apply border-red-400 bg-red-50/40 focus:border-red-500;
+    }
+
+    /* Icon inside an input brightens when the field is focused. */
+    .input-icon-wrap:focus-within .input-icon {
+        @apply text-brand-600;
     }
 
     .btn {
@@ -173,5 +193,221 @@
     [data-reveal] {
         opacity: 1 !important;
         transform: none !important;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Dropdown (Tom Select)
+ * ------------------------------------------------------------------------- */
+@layer components {
+    .ts-wrapper.single .ts-control,
+    .ts-wrapper.single.input-active .ts-control {
+        @apply flex min-h-[46px] cursor-pointer items-center rounded-xl border border-zinc-200 bg-zinc-50/70 py-3 pr-11 pl-4 text-sm text-zinc-900 shadow-none transition duration-200;
+        background-image: none;
+    }
+
+    .ts-wrapper.single .ts-control:hover {
+        @apply border-zinc-300 bg-white;
+    }
+
+    .ts-wrapper.single.focus .ts-control {
+        @apply border-brand-500 bg-white shadow-[0_0_0_4px_rgba(220,38,38,0.1)];
+    }
+
+    .ts-wrapper.input-error .ts-control {
+        @apply border-red-400 bg-red-50/40;
+    }
+
+    /* Chevron that flips when the menu opens. */
+    .ts-wrapper.single .ts-control::after {
+        content: '';
+        @apply pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 bg-zinc-400 transition-transform duration-300;
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='black'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19.5 8.25-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+
+    .ts-wrapper.single.dropdown-active .ts-control::after {
+        @apply rotate-180 bg-brand-600;
+    }
+
+    .ts-wrapper .ts-control > input {
+        @apply text-sm;
+    }
+
+    .ts-dropdown {
+        @apply z-50 mt-2 origin-top overflow-hidden rounded-2xl border border-zinc-200 bg-white p-1.5 text-sm shadow-[0_20px_40px_-12px_rgba(16,24,40,0.25)];
+        animation: scale-in 0.2s var(--ease-out-soft);
+    }
+
+    .ts-dropdown .ts-dropdown-content {
+        @apply max-h-72 overscroll-contain;
+    }
+
+    .ts-dropdown .option {
+        @apply flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-zinc-700 transition-colors duration-150;
+    }
+
+    .ts-dropdown .option.active {
+        @apply bg-brand-50 text-brand-800;
+    }
+
+    .ts-dropdown .option.selected {
+        @apply bg-brand-600 font-semibold text-white;
+    }
+
+    .ts-dropdown .option.selected.active {
+        @apply bg-brand-700 text-white;
+    }
+
+    .ts-dropdown .option[aria-disabled='true'],
+    .ts-dropdown .option.disabled {
+        @apply cursor-not-allowed text-zinc-400 opacity-100;
+    }
+
+    .ts-dropdown .option .option-badge {
+        @apply inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-600/15;
+    }
+
+    .ts-dropdown .option .option-check {
+        @apply h-4 w-4 shrink-0;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Date picker (flatpickr)
+ * ------------------------------------------------------------------------- */
+@layer components {
+    .flatpickr-calendar {
+        @apply mt-2 w-[308px] rounded-2xl border border-zinc-200 bg-white p-3 font-sans shadow-[0_20px_40px_-12px_rgba(16,24,40,0.25)];
+    }
+
+    .flatpickr-calendar.open {
+        animation: scale-in 0.2s var(--ease-out-soft);
+    }
+
+    .flatpickr-calendar::before,
+    .flatpickr-calendar::after {
+        display: none;
+    }
+
+    .flatpickr-months {
+        @apply mb-2 items-center;
+    }
+
+    .flatpickr-months .flatpickr-month {
+        @apply h-10 text-zinc-900;
+    }
+
+    .flatpickr-current-month {
+        @apply flex h-10 items-center justify-center gap-1 p-0 text-[15px] font-bold;
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        @apply rounded-lg px-1.5 py-1 font-bold hover:bg-zinc-100;
+    }
+
+    .flatpickr-current-month input.cur-year {
+        @apply font-bold;
+    }
+
+    .flatpickr-months .flatpickr-prev-month,
+    .flatpickr-months .flatpickr-next-month {
+        @apply top-3 flex h-9 w-9 items-center justify-center rounded-xl p-0 text-zinc-500 transition hover:bg-brand-50;
+    }
+
+    .flatpickr-months .flatpickr-prev-month { @apply left-3; }
+    .flatpickr-months .flatpickr-next-month { @apply right-3; }
+
+    .flatpickr-months .flatpickr-prev-month svg,
+    .flatpickr-months .flatpickr-next-month svg {
+        @apply h-3 w-3 fill-current;
+    }
+
+    .flatpickr-months .flatpickr-prev-month:hover svg,
+    .flatpickr-months .flatpickr-next-month:hover svg {
+        @apply fill-brand-600;
+    }
+
+    .flatpickr-weekdays {
+        @apply mb-1 h-8;
+    }
+
+    span.flatpickr-weekday {
+        @apply text-[11px] font-semibold tracking-wider text-zinc-400 uppercase;
+    }
+
+    .flatpickr-days,
+    .dayContainer {
+        @apply w-full max-w-none min-w-0;
+    }
+
+    .flatpickr-day {
+        @apply m-0.5 h-10 max-w-10 rounded-xl border-0 text-sm leading-10 font-medium text-zinc-700 transition duration-150;
+    }
+
+    .flatpickr-day:hover,
+    .flatpickr-day:focus {
+        @apply bg-brand-50 text-brand-700;
+    }
+
+    /* Today: UKM gold ring. */
+    .flatpickr-day.today {
+        @apply bg-ukm-gold-50 font-bold text-zinc-900 ring-2 ring-ukm-gold ring-inset;
+    }
+
+    .flatpickr-day.today:hover {
+        @apply bg-ukm-gold text-zinc-900;
+    }
+
+    .flatpickr-day.selected,
+    .flatpickr-day.selected:hover,
+    .flatpickr-day.selected.today {
+        @apply bg-brand-600 font-bold text-white shadow-[0_6px_14px_-4px_rgba(220,38,38,0.55)] ring-0;
+    }
+
+    .flatpickr-day.prevMonthDay,
+    .flatpickr-day.nextMonthDay {
+        @apply text-zinc-300;
+    }
+
+    .flatpickr-day.flatpickr-disabled,
+    .flatpickr-day.flatpickr-disabled:hover {
+        @apply bg-transparent text-zinc-200;
+    }
+
+    /* Footer with a "Today" shortcut, added in resources/js/app.js. */
+    .flatpickr-footer {
+        @apply mt-2 flex items-center justify-between border-t border-zinc-100 pt-3;
+    }
+
+    .flatpickr-footer button {
+        @apply rounded-lg px-3 py-1.5 text-xs font-semibold transition;
+    }
+
+    /* The visible input flatpickr creates keeps the calendar icon clickable. */
+    .flatpickr-input[readonly] {
+        @apply cursor-pointer;
+    }
+}
+
+@layer components {
+    .ts-dropdown .option .option-check {
+        @apply opacity-0 transition-opacity;
+    }
+
+    .ts-dropdown .option.selected .option-check {
+        @apply opacity-100;
+    }
+
+    /* Filter dropdown on the logbook list sits inline, not full width. */
+    .ts-wrapper.min-w-64 {
+        @apply min-w-64;
+    }
+}
+
+@layer components {
+    /* Leave room on the right for the chevron. */
+    .ts-wrapper.single .ts-control {
+        /* Tom Select forces padding-right from this variable with !important. */
+        --ts-pr-min: 2.75rem;
     }
 }
