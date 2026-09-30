@@ -27,7 +27,10 @@
                 </span>
             </div>
 
-            <h2 class="max-w-md animate-fade-up text-4xl leading-tight font-bold tracking-tight xl:text-5xl">Your FYP logbook, online.</h2>
+            <div class="max-w-lg animate-fade-up">
+                <h2 class="text-4xl leading-tight font-bold tracking-tight xl:text-5xl">Every week of your FYP, <span class="text-brand-500">logged and signed.</span></h2>
+                <p class="mt-4 text-lg text-zinc-300">Record your progress, get feedback from your supervisor, and keep your whole semester in one place.</p>
+            </div>
 
             <p class="text-sm text-zinc-500">&copy; {{ date('Y') }} Digital LogBook+</p>
         </div>
