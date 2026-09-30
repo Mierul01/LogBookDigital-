@@ -37,6 +37,21 @@ document.addEventListener('submit', (event) => {
     }
 });
 
+// Eye button that shows or hides a password field.
+document.querySelectorAll('[data-password-toggle]').forEach((wrapper) => {
+    const input = wrapper.querySelector('input');
+    const button = wrapper.querySelector('[data-password-toggle-button]');
+
+    button.addEventListener('click', () => {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        button.setAttribute('aria-pressed', String(show));
+        button.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        wrapper.querySelector('[data-icon-show]').classList.toggle('hidden', show);
+        wrapper.querySelector('[data-icon-hide]').classList.toggle('hidden', !show);
+    });
+});
+
 // Mobile sidebar toggle.
 document.querySelectorAll('[data-sidebar-toggle]').forEach((button) => {
     button.addEventListener('click', () => {

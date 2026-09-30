@@ -6,12 +6,11 @@
         @csrf
 
         <x-field name="username" label="Matric No. / Username">
-            <input id="username" name="username" type="text" value="{{ old('username') }}" required autofocus autocomplete="username"
-                   placeholder="e.g. A192910" @class(['input', 'input-error' => $errors->has('username')])>
+            <x-icon-input icon="user" name="username" value="{{ old('username') }}" required autofocus autocomplete="username" placeholder="e.g. A192910" />
         </x-field>
 
         <x-field name="password" label="Password">
-            <input id="password" name="password" type="password" required autocomplete="current-password" class="input">
+            <x-icon-input icon="lock" name="password" type="password" required autocomplete="current-password" placeholder="Your password" />
         </x-field>
 
         <label class="flex items-center gap-2 text-sm text-zinc-600">

@@ -11,24 +11,20 @@
         </x-field>
 
         <x-field name="username" label="Username" hint="Used to log in. Letters, numbers, dashes.">
-            <input id="username" name="username" type="text" value="{{ old('username') }}" required autocomplete="username"
-                   @class(['input', 'input-error' => $errors->has('username')])>
+            <x-icon-input icon="user" name="username" value="{{ old('username') }}" required autocomplete="username" />
         </x-field>
 
         <x-field name="email" label="Email">
-            <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="email"
-                   @class(['input', 'input-error' => $errors->has('email')])>
+            <x-icon-input icon="envelope" name="email" type="email" value="{{ old('email') }}" required autocomplete="email" />
         </x-field>
 
-        <div class="grid gap-5 sm:grid-cols-2">
-            <x-field name="password" label="Password">
-                <input id="password" name="password" type="password" required autocomplete="new-password"
-                       @class(['input', 'input-error' => $errors->has('password')])>
-            </x-field>
-            <x-field name="password_confirmation" label="Confirm">
-                <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password" class="input">
-            </x-field>
-        </div>
+        <x-field name="password" label="Password" hint="At least 8 characters.">
+            <x-icon-input icon="lock" name="password" type="password" required autocomplete="new-password" />
+        </x-field>
+
+        <x-field name="password_confirmation" label="Confirm password">
+            <x-icon-input icon="lock" name="password_confirmation" type="password" required autocomplete="new-password" />
+        </x-field>
 
         <button type="submit" class="btn btn-primary w-full">Create account</button>
     </form>
