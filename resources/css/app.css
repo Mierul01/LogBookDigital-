@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-brand-50: #fef2f2;
+    --color-brand-100: #fee2e2;
+    --color-brand-500: #ef4444;
+    --color-brand-600: #dc2626;
+    --color-brand-700: #b91c1c;
+    --color-brand-900: #7f1d1d;
+}
+
+@layer components {
+    .card {
+        @apply rounded-2xl border border-zinc-200 bg-white shadow-sm;
+    }
+
+    .label {
+        @apply mb-1.5 block text-sm font-medium text-zinc-700;
+    }
+
+    .input {
+        @apply block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-xs placeholder:text-zinc-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-500;
+    }
+
+    .input-error {
+        @apply border-red-400 focus:border-red-500 focus:ring-red-500/20;
+    }
+
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .btn-primary {
+        @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700 focus:ring-brand-500;
+    }
+
+    .btn-secondary {
+        @apply border border-zinc-300 bg-white text-zinc-700 shadow-xs hover:bg-zinc-50 focus:ring-zinc-400;
+    }
+
+    .btn-danger {
+        @apply bg-white text-red-600 ring-1 ring-red-200 ring-inset hover:bg-red-50 focus:ring-red-500;
+    }
+
+    .nav-link {
+        @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 transition hover:bg-white/5 hover:text-white;
+    }
+
+    .nav-link.active {
+        @apply bg-white/10 text-white;
+    }
+}
