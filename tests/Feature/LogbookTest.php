@@ -43,6 +43,14 @@ class LogbookTest extends TestCase
         $this->get('/dashboard')->assertRedirect('/login');
     }
 
+    public function test_demo_accounts_are_only_listed_in_local_environment(): void
+    {
+        $this->get('/login')->assertOk()->assertDontSee('Demo accounts');
+
+        $this->app['env'] = 'local';
+        $this->get('/login')->assertOk()->assertSee('Demo accounts')->assertSee('dr.aisyah');
+    }
+
     public function test_student_can_log_in_with_lowercase_matric_number(): void
     {
         $this->post('/login', ['username' => strtolower($this->student->username), 'password' => 'password'])
