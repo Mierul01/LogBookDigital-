@@ -12,7 +12,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="h-full bg-zinc-50 font-sans text-zinc-900 antialiased">
-@php($user = auth()->user())
+@php
+    $user = auth()->user();
+@endphp
 
 {{-- Mobile backdrop --}}
 <div data-sidebar-backdrop data-sidebar-toggle class="fixed inset-0 z-30 hidden bg-zinc-950/60 backdrop-blur-sm lg:hidden"></div>
@@ -83,24 +85,49 @@
 <div class="lg:pl-72">
     {{-- Top bar --}}
     <header data-topbar class="sticky top-0 z-20 border-b border-zinc-200/70 bg-white/85 backdrop-blur-md transition-shadow duration-300">
-        <div class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-10 lg:py-5">
+        @php
+            // Breadcrumb section for the current page.
+            $section = match (true) {
+                request()->routeIs('logbooks.*') => [$user->isSupervisor() ? 'Student Logbooks' : 'My Logbook', route('logbooks.index')],
+                request()->routeIs('students.*') => ['Students', route('students.index')],
+                request()->routeIs('profile') => ['Account', route('profile')],
+                default => null,
+            };
+        @endphp
+        <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-10">
             <button type="button" data-sidebar-toggle class="icon-btn -ml-1 lg:hidden" aria-label="Open menu">
                 <x-icon name="menu" />
             </button>
+
             <div class="min-w-0 flex-1 animate-fade-in">
-                <h1 class="truncate text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl">{{ $title }}</h1>
-                @if ($subtitle)
-                    <p class="mt-0.5 hidden truncate text-sm text-zinc-500 sm:block">{{ $subtitle }}</p>
-                @endif
+                <nav aria-label="Breadcrumb" class="flex items-center gap-1 text-[11px] font-medium text-zinc-400">
+                    <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-1 transition hover:text-brand-600">
+                        <x-icon name="home" class="h-3.5 w-3.5" /> Home
+                    </a>
+                    @if ($section)
+                        <x-icon name="chevron-right" class="h-3 w-3" />
+                        <a href="{{ $section[1] }}" class="truncate transition hover:text-brand-600">{{ $section[0] }}</a>
+                    @endif
+                </nav>
+                <div class="flex min-w-0 items-baseline gap-2.5">
+                    <h1 class="shrink-0 truncate text-lg leading-tight font-bold tracking-tight text-zinc-900">{{ $title }}</h1>
+                    @if ($subtitle)
+                        <span class="hidden h-1 w-1 shrink-0 translate-y-[-3px] rounded-full bg-zinc-300 lg:block"></span>
+                        <p class="hidden truncate text-sm text-zinc-500 lg:block">{{ $subtitle }}</p>
+                    @endif
+                </div>
             </div>
-            <span class="hidden items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-600 xl:inline-flex">
-                <x-icon name="calendar" class="h-4 w-4 text-zinc-400" /> {{ now()->format('D, j M Y') }}
+
+            <span class="hidden shrink-0 items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-600 xl:inline-flex">
+                <x-icon name="calendar" class="h-3.5 w-3.5 text-zinc-400" /> {{ now()->format('D, j M Y') }}
             </span>
-            {{ $actions ?? '' }}
+            @isset($actions)
+                <div class="flex shrink-0 items-center gap-2 [&_.btn]:px-3.5 [&_.btn]:py-2">{{ $actions }}</div>
+            @endisset
         </div>
     </header>
 
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
+    <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
         <x-flash />
         {{ $slot }}
     </main>
