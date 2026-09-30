@@ -95,7 +95,8 @@
                 </div>
 
                 @can('review', $logbook)
-                    <form method="POST" action="{{ route('logbooks.review', $logbook) }}" class="space-y-5 p-6">
+                    <form method="POST" action="{{ route('logbooks.review', $logbook) }}" class="space-y-5 p-6"
+                          data-confirm="Week {{ $logbook->week_no }} of {{ $logbook->student->name }} will be marked as reviewed and locked from further edits by the student." data-confirm-title="Approve &amp; sign?" data-confirm-button="Approve &amp; sign">
                         @csrf @method('PUT')
 
                         <x-field name="supervisor_comment" label="Komen (Comment)">
@@ -150,7 +151,7 @@
             </section>
 
             @can('delete', $logbook)
-                <form method="POST" action="{{ route('logbooks.destroy', $logbook) }}" data-reveal data-confirm="Delete the week {{ $logbook->week_no }} entry? This cannot be undone.">
+                <form method="POST" action="{{ route('logbooks.destroy', $logbook) }}" data-reveal data-confirm="The week {{ $logbook->week_no }} entry will be permanently deleted. This cannot be undone." data-confirm-title="Delete this entry?" data-confirm-button="Yes, delete" data-confirm-tone="danger">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-danger w-full"><x-icon name="trash" class="h-4 w-4" /> Delete entry</button>
                 </form>

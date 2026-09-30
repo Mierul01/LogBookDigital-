@@ -44,7 +44,7 @@ class StudentController extends Controller
             'role' => User::ROLE_STUDENT,
         ]);
 
-        return redirect()->route('students.index')->with('success', "{$student->name} ({$student->username}) registered.");
+        return redirect()->route('students.index')->with('success', "{$student->name} ({$student->username}) registered.")->with('success_title', 'Student registered');
     }
 
     public function edit(Request $request, User $student): View
@@ -65,7 +65,7 @@ class StudentController extends Controller
 
         $student->update($data);
 
-        return redirect()->route('students.index')->with('success', "{$student->name} updated.");
+        return redirect()->route('students.index')->with('success', "{$student->name} updated.")->with('success_title', 'Student updated');
     }
 
     public function destroy(Request $request, User $student): RedirectResponse
@@ -74,7 +74,7 @@ class StudentController extends Controller
 
         $student->delete();
 
-        return redirect()->route('students.index')->with('success', "{$student->name} and their logbook entries were removed.");
+        return redirect()->route('students.index')->with('success', "{$student->name} and their logbook entries were removed.")->with('success_title', 'Student removed');
     }
 
     private function ensureSupervises(Request $request, User $student): void

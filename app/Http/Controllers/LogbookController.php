@@ -55,7 +55,8 @@ class LogbookController extends Controller
         $logbook = $request->user()->logbooks()->create($request->validated());
 
         return redirect()->route('logbooks.show', $logbook)
-            ->with('success', "Week {$logbook->week_no} entry saved. Your supervisor can now review it.");
+            ->with('success', "Week {$logbook->week_no} entry saved. Your supervisor can now review it.")
+            ->with('success_title', 'Entry submitted!');
     }
 
     public function show(Logbook $logbook): View
@@ -81,7 +82,7 @@ class LogbookController extends Controller
 
         $logbook->update($request->validated());
 
-        return redirect()->route('logbooks.show', $logbook)->with('success', 'Entry updated.');
+        return redirect()->route('logbooks.show', $logbook)->with('success', 'Entry updated.')->with('success_title', 'Changes saved');
     }
 
     public function destroy(Logbook $logbook): RedirectResponse
@@ -90,7 +91,7 @@ class LogbookController extends Controller
 
         $logbook->delete();
 
-        return redirect()->route('logbooks.index')->with('success', "Week {$logbook->week_no} entry deleted.");
+        return redirect()->route('logbooks.index')->with('success', "Week {$logbook->week_no} entry deleted.")->with('success_title', 'Entry deleted');
     }
 
     public function review(ReviewLogbookRequest $request, Logbook $logbook): RedirectResponse
@@ -100,6 +101,7 @@ class LogbookController extends Controller
         $logbook->update([...$request->validated(), 'reviewed_at' => now()]);
 
         return redirect()->route('logbooks.show', $logbook)
-            ->with('success', "Week {$logbook->week_no} of {$logbook->student->name} marked as reviewed.");
+            ->with('success', "Week {$logbook->week_no} of {$logbook->student->name} marked as reviewed.")
+            ->with('success_title', 'Entry signed');
     }
 }

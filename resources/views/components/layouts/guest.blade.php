@@ -43,6 +43,7 @@
                 <img src="{{ asset('images/ukm.png') }}" alt="UKM" class="h-10 w-10 object-contain">
                 <span class="text-lg font-semibold">Digital LogBook<span class="text-brand-600">+</span></span>
             </div>
+            <x-flash />
             {{ $slot }}
         </div>
     </div>

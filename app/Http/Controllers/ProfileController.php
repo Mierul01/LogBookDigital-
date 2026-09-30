@@ -42,7 +42,7 @@ class ProfileController extends Controller
 
         $user->update($data);
 
-        return back()->with('success', 'Profile updated.');
+        return back()->with('success_title', 'Profile updated')->with('success', 'Your details have been saved.');
     }
 
     public function password(Request $request): RedirectResponse
@@ -54,6 +54,6 @@ class ProfileController extends Controller
 
         $request->user()->update(['password' => $data['password']]);
 
-        return back()->with('success', 'Password changed.');
+        return back()->with('success_title', 'Password changed')->with('success', 'Use your new password next time you log in.');
     }
 }

@@ -34,6 +34,6 @@ class RegisterController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('success', 'Welcome aboard, '.$user->name.'! Start by registering your students.');
+        return redirect()->route('dashboard')->with('success', 'Welcome aboard, '.$user->name.'! Start by registering your students.')->with('success_title', 'Account created');
     }
 }

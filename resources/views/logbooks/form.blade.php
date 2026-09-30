@@ -6,7 +6,8 @@
         <a href="{{ $editing ? route('logbooks.show', $logbook) : route('logbooks.index') }}" class="btn btn-secondary"><x-icon name="arrow-left" class="h-4 w-4" /> <span class="hidden sm:inline">Back</span></a>
     </x-slot:actions>
 
-    <form method="POST" action="{{ $editing ? route('logbooks.update', $logbook) : route('logbooks.store') }}" class="grid gap-8 lg:grid-cols-3">
+    <form method="POST" action="{{ $editing ? route('logbooks.update', $logbook) : route('logbooks.store') }}" class="grid gap-8 lg:grid-cols-3"
+          @unless ($editing) data-confirm="Your supervisor will be able to review it. You can still edit it until it is signed." data-confirm-title="Submit this entry?" data-confirm-button="Yes, submit" @endunless>
         @csrf
         @if ($editing) @method('PUT') @endif
 

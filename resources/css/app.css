@@ -1,7 +1,9 @@
-/* Third-party widget CSS goes in its own low-priority layer so our theme below overrides it. */
-@layer vendor, theme, base, components, utilities;
+/* Third-party widget CSS sits after Tailwind's reset (base) but before our components, so the
+ * libraries keep their own margins/borders and our theme below still overrides them. */
+@layer theme, base, vendor, components, utilities;
 @import 'tom-select/dist/css/tom-select.css' layer(vendor);
 @import 'flatpickr/dist/flatpickr.css' layer(vendor);
+@import 'sweetalert2/dist/sweetalert2.css' layer(vendor);
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -409,5 +411,100 @@
     .ts-wrapper.single .ts-control {
         /* Tom Select forces padding-right from this variable with !important. */
         --ts-pr-min: 2.75rem;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Popups (SweetAlert2)
+ * ------------------------------------------------------------------------- */
+@layer components {
+    .btn-danger-solid {
+        @apply bg-red-600 text-white shadow-sm hover:bg-red-700 hover:shadow-[0_8px_20px_-6px_rgba(220,38,38,0.5)] focus:ring-red-500/25;
+    }
+
+    div:where(.swal2-container) {
+        @apply bg-zinc-950/50 backdrop-blur-sm;
+    }
+
+    div:where(.swal2-container).swal2-backdrop-show {
+        animation: fade-in 0.2s ease-out;
+    }
+
+    .swal-card {
+        @apply w-[26rem] max-w-[calc(100vw-2rem)] rounded-3xl border border-zinc-200 bg-white px-6 pt-8 pb-6 font-sans shadow-[0_30px_60px_-15px_rgba(16,24,40,0.35)];
+    }
+
+    .swal-show {
+        animation: swal-pop 0.35s var(--ease-out-soft);
+    }
+
+    .swal-hide {
+        animation: swal-out 0.15s ease-in forwards;
+    }
+
+    .swal-title {
+        @apply p-0 pt-2 text-xl font-bold tracking-tight text-zinc-900;
+    }
+
+    .swal-text {
+        @apply mx-0 mt-2 p-0 text-sm leading-relaxed text-zinc-500;
+    }
+
+    .swal-actions {
+        @apply mt-7 flex w-full flex-nowrap gap-3;
+    }
+
+    .swal-actions .btn {
+        @apply m-0 flex-1 py-3;
+    }
+
+    .swal-icon {
+        @apply mt-0 mb-2 scale-90;
+    }
+
+    /* Recolour the stock icons to the app palette. */
+    div:where(.swal2-icon).swal2-success {
+        @apply border-emerald-500/30 text-emerald-500;
+    }
+    div:where(.swal2-icon).swal2-success [class^='swal2-success-line'] {
+        @apply bg-emerald-500;
+    }
+    div:where(.swal2-icon).swal2-success .swal2-success-ring {
+        @apply border-emerald-500/30;
+    }
+    div:where(.swal2-icon).swal2-warning {
+        @apply border-red-300 text-red-500;
+    }
+    div:where(.swal2-icon).swal2-question {
+        @apply border-ukm-blue/40 text-ukm-blue;
+    }
+    div:where(.swal2-icon).swal2-info {
+        @apply border-ukm-gold/60 text-ukm-gold;
+    }
+
+    .swal-progress {
+        @apply bg-brand-500/60;
+    }
+
+    /* Small toast in the top-right corner. */
+    .swal-toast {
+        @apply rounded-2xl border border-zinc-200 bg-white/95 px-4 py-3 font-sans shadow-[0_20px_40px_-12px_rgba(16,24,40,0.25)] backdrop-blur;
+    }
+
+    .swal-toast-title {
+        @apply m-0 text-sm font-semibold text-zinc-800;
+    }
+
+    div:where(.swal2-container).swal2-top-end:has(.swal-toast) {
+        @apply bg-transparent backdrop-blur-none;
+    }
+
+    @keyframes swal-pop {
+        0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @keyframes swal-out {
+        to { opacity: 0; transform: scale(0.95); }
     }
 }

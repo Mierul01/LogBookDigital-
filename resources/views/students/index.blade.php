@@ -50,7 +50,7 @@
                                 <div class="inline-flex items-center gap-1">
                                     <a href="{{ route('logbooks.index', ['student' => $student->id]) }}" title="View logbook" class="icon-btn"><x-icon name="book" class="h-4 w-4" /></a>
                                     <a href="{{ route('students.edit', $student) }}" title="Edit" class="icon-btn"><x-icon name="pencil" class="h-4 w-4" /></a>
-                                    <form method="POST" action="{{ route('students.destroy', $student) }}" data-confirm="Remove {{ $student->name }}? All of their logbook entries will be deleted too.">
+                                    <form method="POST" action="{{ route('students.destroy', $student) }}" data-confirm="{{ $student->name }} and all of their logbook entries will be permanently deleted." data-confirm-title="Remove student?" data-confirm-button="Yes, remove" data-confirm-tone="danger">
                                         @csrf @method('DELETE')
                                         <button type="submit" title="Remove" class="icon-btn hover:bg-red-50 hover:text-red-600"><x-icon name="trash" class="h-4 w-4" /></button>
                                     </form>

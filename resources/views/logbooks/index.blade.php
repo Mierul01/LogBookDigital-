@@ -86,7 +86,7 @@
                                         <a href="{{ route('logbooks.edit', $logbook) }}" title="Edit" class="icon-btn"><x-icon name="pencil" class="h-4 w-4" /></a>
                                     @endcan
                                     @can('delete', $logbook)
-                                        <form method="POST" action="{{ route('logbooks.destroy', $logbook) }}" data-confirm="Delete the week {{ $logbook->week_no }} entry? This cannot be undone.">
+                                        <form method="POST" action="{{ route('logbooks.destroy', $logbook) }}" data-confirm="The week {{ $logbook->week_no }} entry will be permanently deleted. This cannot be undone." data-confirm-title="Delete this entry?" data-confirm-button="Yes, delete" data-confirm-tone="danger">
                                             @csrf @method('DELETE')
                                             <button type="submit" title="Delete" class="icon-btn hover:bg-red-50 hover:text-red-600"><x-icon name="trash" class="h-4 w-4" /></button>
                                         </form>

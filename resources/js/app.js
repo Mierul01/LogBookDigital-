@@ -2,6 +2,7 @@ import './bootstrap';
 import SignaturePad from 'signature_pad';
 import TomSelect from 'tom-select';
 import flatpickr from 'flatpickr';
+import { Alert } from './alerts';
 
 const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const checkIcon = '<svg class="option-check" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>';
@@ -13,6 +14,8 @@ document.querySelectorAll('select[data-select]').forEach((select) => {
 
     new TomSelect(select, {
         controlInput: null,
+        // Render the menu on <body> so animated cards (which create their own stacking context) can't cover it.
+        dropdownParent: 'body',
         maxOptions: null,
         allowEmptyOption: true,
         render: {
@@ -75,17 +78,16 @@ document.querySelectorAll('[data-signature-pad]').forEach((wrapper) => {
 
     clear?.addEventListener('click', () => pad.clear());
 
-    form?.addEventListener('submit', () => {
-        input.value = pad.isEmpty() ? '' : pad.toDataURL('image/png');
+    form?.addEventListener('submit', (event) => {
+        if (pad.isEmpty()) {
+            // Stop here so the "Approve & sign?" confirmation doesn't open for an empty pad.
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            Alert.fire({ icon: 'info', title: 'Signature needed', text: 'Please sign in the signature box before approving this entry.', confirmButtonText: 'OK' });
+            return;
+        }
+        input.value = pad.toDataURL('image/png');
     });
-});
-
-// Ask before any destructive form is submitted.
-document.addEventListener('submit', (event) => {
-    const message = event.target.dataset.confirm;
-    if (message && !window.confirm(message)) {
-        event.preventDefault();
-    }
 });
 
 // Eye button that shows or hides a password field.

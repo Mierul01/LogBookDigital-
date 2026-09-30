@@ -59,7 +59,7 @@
             <a href="{{ route('profile') }}" @class(['nav-link', 'active' => request()->routeIs('profile')])>
                 <x-icon name="user" /> Profile
             </a>
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ route('logout') }}" data-confirm="You will need to sign in again to access your logbook." data-confirm-title="Log out?" data-confirm-button="Yes, log out" data-confirm-icon="question">
                 @csrf
                 <button type="submit" class="nav-link w-full hover:text-brand-400">
                     <x-icon name="logout" /> Log out

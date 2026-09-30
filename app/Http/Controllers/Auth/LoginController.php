@@ -51,7 +51,8 @@ class LoginController extends Controller
         RateLimiter::clear($throttleKey);
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('dashboard'))
+            ->with('toast', 'Welcome back, '.$request->user()->name.'!');
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -61,6 +62,8 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('login')
+            ->with('success_title', 'Logged out')
+            ->with('success', 'You have been signed out safely. See you next time!');
     }
 }
