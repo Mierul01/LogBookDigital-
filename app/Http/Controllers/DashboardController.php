@@ -37,6 +37,19 @@ class DashboardController extends Controller
                 'next_week' => $user->isStudent() ? $user->nextLogbookWeek() : null,
             ],
             'recent' => $recent,
+            // Student: entries keyed by week number, for the week-by-week timeline.
+            'timeline' => $user->isStudent() ? $user->logbooks()->get()->keyBy('week_no') : collect(),
+            // Supervisor: each student's progress.
+            'students' => $user->isSupervisor()
+                ? $user->students()
+                    ->withCount([
+                        'logbooks',
+                        'logbooks as reviewed_count' => fn ($q) => $q->whereNotNull('reviewed_at'),
+                    ])
+                    ->orderBy('name')
+                    ->take(6)
+                    ->get()
+                : collect(),
         ]);
     }
 }

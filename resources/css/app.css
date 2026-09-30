@@ -11,15 +11,67 @@
 
     --color-brand-50: #fef2f2;
     --color-brand-100: #fee2e2;
+    --color-brand-200: #fecaca;
     --color-brand-500: #ef4444;
     --color-brand-600: #dc2626;
     --color-brand-700: #b91c1c;
+    --color-brand-800: #991b1b;
     --color-brand-900: #7f1d1d;
+
+    --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --animate-fade-up: fade-up 0.6s var(--ease-out-soft) both;
+    --animate-fade-in: fade-in 0.4s ease-out both;
+    --animate-scale-in: scale-in 0.5s var(--ease-out-soft) both;
+    --animate-float: float 6s ease-in-out infinite;
+
+    @keyframes fade-up {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes scale-in {
+        from { opacity: 0; transform: scale(0.94); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    ::selection {
+        @apply bg-brand-100 text-brand-900;
+    }
 }
 
 @layer components {
     .card {
-        @apply rounded-2xl border border-zinc-200 bg-white shadow-sm;
+        @apply rounded-2xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)];
+    }
+
+    /* Card that lifts slightly on hover. */
+    .card-hover {
+        @apply transition duration-300 ease-(--ease-out-soft) hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_12px_32px_-12px_rgba(16,24,40,0.18)];
+    }
+
+    .card-header {
+        @apply flex items-center gap-3 border-b border-zinc-100 px-6 py-5;
+    }
+
+    .card-icon {
+        @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl;
     }
 
     .label {
@@ -27,34 +79,99 @@
     }
 
     .input {
-        @apply block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-xs placeholder:text-zinc-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none disabled:bg-zinc-50 disabled:text-zinc-500;
+        @apply block w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 shadow-xs transition duration-200 placeholder:text-zinc-400 hover:border-zinc-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-50 disabled:text-zinc-500;
     }
 
     .input-error {
-        @apply border-red-400 focus:border-red-500 focus:ring-red-500/20;
+        @apply border-red-400 focus:border-red-500 focus:ring-red-500/10;
     }
 
     .btn {
-        @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-200 ease-(--ease-out-soft) focus:ring-4 focus:outline-none active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50;
     }
 
     .btn-primary {
-        @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700 focus:ring-brand-500;
+        @apply bg-brand-600 text-white shadow-[0_1px_2px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-brand-700 hover:shadow-[0_8px_20px_-6px_rgba(220,38,38,0.5)] focus:ring-brand-500/25;
     }
 
     .btn-secondary {
-        @apply border border-zinc-300 bg-white text-zinc-700 shadow-xs hover:bg-zinc-50 focus:ring-zinc-400;
+        @apply border border-zinc-300 bg-white text-zinc-700 shadow-xs hover:border-zinc-400 hover:bg-zinc-50 focus:ring-zinc-400/20;
     }
 
     .btn-danger {
-        @apply bg-white text-red-600 ring-1 ring-red-200 ring-inset hover:bg-red-50 focus:ring-red-500;
+        @apply bg-white text-red-600 ring-1 ring-red-200 ring-inset hover:bg-red-50 hover:ring-red-300 focus:ring-red-500/20;
+    }
+
+    .icon-btn {
+        @apply rounded-lg p-2 text-zinc-500 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 active:scale-90;
+    }
+
+    .nav-section {
+        @apply px-3 pt-5 pb-2 text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase;
     }
 
     .nav-link {
-        @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 transition hover:bg-white/5 hover:text-white;
+        @apply relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-400 transition duration-200 ease-(--ease-out-soft) hover:translate-x-1 hover:bg-white/5 hover:text-white;
     }
 
     .nav-link.active {
-        @apply bg-white/10 text-white;
+        @apply bg-white/10 text-white hover:translate-x-0;
+    }
+
+    /* Red bar on the left edge of the active menu item. */
+    .nav-link.active::before {
+        content: '';
+        @apply absolute top-1/2 -left-3 h-6 w-1 -translate-y-1/2 rounded-r-full bg-brand-500;
+    }
+
+    .table-head {
+        @apply bg-zinc-50/80 text-left text-[11px] font-semibold tracking-[0.08em] text-zinc-500 uppercase;
+    }
+
+    .table-row {
+        @apply transition-colors duration-150 hover:bg-brand-50/40;
+    }
+}
+
+@layer utilities {
+    /* Elements revealed as they scroll into view (see resources/js/app.js). */
+    [data-reveal] {
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity 0.7s var(--ease-out-soft), transform 0.7s var(--ease-out-soft);
+        transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    [data-reveal].is-visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    .bg-grid {
+        background-image:
+            linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+        background-size: 28px 28px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    [data-reveal] {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media print {
+    [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
     }
 }

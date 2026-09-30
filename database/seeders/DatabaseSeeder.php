@@ -60,6 +60,10 @@ class DatabaseSeeder extends Seeder
         Logbook::factory()->for($nurul, 'student')->create([
             'week_no' => 1,
             'entry_date' => now()->subWeek()->startOfWeek(),
+            'progress' => 'Discussed the project title and scope. Agreed to build a mobile attendance app using QR codes.',
+            'current_status' => 'Project proposal drafted.',
+            'problem' => 'Not sure which framework to use for the mobile app.',
+            'next_week_task' => 'Compare Flutter and React Native, then write the literature review outline.',
         ]);
     }
 }

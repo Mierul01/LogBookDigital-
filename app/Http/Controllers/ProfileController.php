@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Logbook;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -12,7 +13,22 @@ class ProfileController extends Controller
 {
     public function show(Request $request): View
     {
-        return view('profile', ['user' => $request->user()->load('supervisor')]);
+        $user = $request->user()->load('supervisor');
+
+        $logbooks = $user->isSupervisor() ? $user->supervisedLogbooks() : $user->logbooks();
+        $total = (clone $logbooks)->count();
+        $reviewed = (clone $logbooks)->whereNotNull('logbooks.reviewed_at')->count();
+
+        return view('profile', [
+            'user' => $user,
+            'stats' => [
+                'total' => $total,
+                'reviewed' => $reviewed,
+                'students' => $user->isSupervisor() ? $user->students()->count() : null,
+                'weeks' => Logbook::MAX_WEEKS,
+                'last_entry' => (clone $logbooks)->latest('logbooks.updated_at')->first()?->updated_at,
+            ],
+        ]);
     }
 
     public function update(Request $request): RedirectResponse
