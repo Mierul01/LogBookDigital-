@@ -52,15 +52,6 @@ document.querySelectorAll('[data-password-toggle]').forEach((wrapper) => {
     });
 });
 
-// Local-only demo account buttons on the login page fill in the form.
-document.querySelectorAll('[data-demo-login]').forEach((button) => {
-    button.addEventListener('click', () => {
-        document.getElementById('username').value = button.dataset.username;
-        document.getElementById('password').value = button.dataset.password;
-        document.getElementById('password').focus();
-    });
-});
-
 // Mobile sidebar toggle.
 document.querySelectorAll('[data-sidebar-toggle]').forEach((button) => {
     button.addEventListener('click', () => {
