@@ -27,7 +27,7 @@
                         <tr class="table-row group">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-xs font-bold text-zinc-600 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">{{ $student->initials() }}</span>
+                                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xs font-bold text-zinc-600 ring-1 ring-zinc-200 transition duration-300 group-hover:bg-brand-600 group-hover:text-white group-hover:ring-brand-600">{{ $student->initials() }}</span>
                                     <div>
                                         <p class="font-semibold text-zinc-900">{{ $student->name }}</p>
                                         <p class="text-xs text-zinc-500">{{ $student->username }}</p>

@@ -150,8 +150,9 @@
         @apply bg-zinc-50/80 text-left text-[11px] font-semibold tracking-[0.08em] text-zinc-500 uppercase;
     }
 
+    /* Zebra rows: white, then light grey, with a red tint on hover. */
     .table-row {
-        @apply transition-colors duration-150 hover:bg-brand-50/40;
+        @apply bg-white transition-colors duration-150 even:bg-zinc-100/70 hover:bg-brand-50;
     }
 }
 

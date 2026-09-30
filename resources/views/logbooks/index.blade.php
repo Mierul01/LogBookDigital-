@@ -52,7 +52,7 @@
                         @php($needsReview = $user->isSupervisor() && ! $logbook->isReviewed())
                         <tr class="table-row group">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-zinc-100 leading-none transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
+                                <span class="inline-flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-white leading-none ring-1 ring-zinc-200 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
                                     <span class="text-[8px] font-semibold tracking-wider uppercase opacity-60">Wk</span>
                                     <span class="text-sm font-bold">{{ $logbook->week_no }}</span>
                                 </span>
