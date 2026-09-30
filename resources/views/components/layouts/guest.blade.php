@@ -27,22 +27,7 @@
                 </span>
             </div>
 
-            <div class="max-w-lg animate-fade-up">
-                <span class="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium ring-1 ring-white/15">
-                    <x-icon name="academic-cap" class="h-4 w-4 text-brand-500" /> Final Year Project logbook
-                </span>
-                <h2 class="mt-5 text-4xl leading-tight font-bold tracking-tight xl:text-5xl">Weekly project logs, reviewed and signed online.</h2>
-                <p class="mt-4 text-lg text-zinc-300">Students record their weekly progress. Supervisors comment and sign. No more paper logbooks.</p>
-
-                <ul class="mt-10 space-y-3">
-                    @foreach ([['document', 'Write one entry per week, from anywhere'], ['shield', 'Supervisor comments and digital signature'], ['chart', 'Track progress across the whole semester']] as $i => [$icon, $text])
-                        <li class="flex animate-fade-up items-center gap-3 text-zinc-200" style="animation-delay: {{ 200 + $i * 120 }}ms">
-                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15"><x-icon :name="$icon" class="h-5 w-5 text-brand-500" /></span>
-                            {{ $text }}
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
+            <h2 class="max-w-md animate-fade-up text-4xl leading-tight font-bold tracking-tight xl:text-5xl">Your FYP logbook, online.</h2>
 
             <p class="text-sm text-zinc-500">&copy; {{ date('Y') }} Digital LogBook+</p>
         </div>

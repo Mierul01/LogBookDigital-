@@ -1,6 +1,6 @@
 <x-layouts.guest title="Log in">
     <h1 class="text-2xl font-bold tracking-tight">Welcome back</h1>
-    <p class="mt-1 text-sm text-zinc-500">Sign in with your matric number or supervisor username.</p>
+    <p class="mt-1 text-sm text-zinc-500">Sign in to continue.</p>
 
     <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-5">
         @csrf
