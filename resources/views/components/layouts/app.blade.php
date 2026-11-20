@@ -51,7 +51,7 @@
                 <x-icon name="book" /> {{ $user->isStaff() ? 'Student Logbooks' : 'My Logbook' }}
             </a>
             @if ($user->isCoordinator())
-                <a href="{{ route('admin.users.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.users.*')])>
+                <a href="{{ route('admin.users.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.users.*', 'admin.import.*')])>
                     <x-icon name="users" /> Users
                 </a>
                 <a href="{{ route('admin.semesters.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.semesters.*')])>

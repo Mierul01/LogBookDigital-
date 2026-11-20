@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\SemesterController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
@@ -53,6 +54,9 @@ Route::middleware('auth')->group(function () {
 
     // FYP coordinator: every account in the faculty.
     Route::middleware('role:coordinator')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('users/import', [ImportController::class, 'create'])->name('import.create');
+        Route::post('users/import', [ImportController::class, 'store'])->name('import.store');
+        Route::get('users/import/template.csv', [ImportController::class, 'template'])->name('import.template');
         Route::resource('users', UserController::class)->except('show');
         Route::resource('semesters', SemesterController::class)->except('show');
         Route::post('semesters/{semester}/current', [SemesterController::class, 'makeCurrent'])->name('semesters.current');

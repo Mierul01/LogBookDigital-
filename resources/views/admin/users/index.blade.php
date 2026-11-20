@@ -1,5 +1,6 @@
 <x-layouts.app title="Users" subtitle="Every student, supervisor and coordinator account in the faculty">
     <x-slot:actions>
+        <a href="{{ route('admin.import.create') }}" class="btn btn-secondary"><x-icon name="document" class="h-4 w-4" /> <span class="hidden sm:inline">Import CSV</span></a>
         <a href="{{ route('admin.users.create', ['role' => $filters['role'] ?? 'student']) }}" class="btn btn-primary"><x-icon name="plus" class="h-4 w-4" /> <span class="hidden sm:inline">Add user</span></a>
     </x-slot:actions>
 
