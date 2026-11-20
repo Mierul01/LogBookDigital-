@@ -143,11 +143,11 @@
     }
 
     .nav-section {
-        @apply px-3 pt-5 pb-2 text-[11px] font-semibold tracking-[0.12em] text-brand-300/70 uppercase;
+        @apply px-3 pt-4 pb-1.5 text-[10px] font-semibold tracking-[0.12em] text-brand-300/70 uppercase;
     }
 
     .nav-link {
-        @apply relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-300 transition duration-200 ease-(--ease-out-soft) hover:translate-x-1 hover:bg-white/5 hover:text-white;
+        @apply relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-slate-300 transition duration-200 ease-(--ease-out-soft) hover:translate-x-1 hover:bg-white/5 hover:text-white;
     }
 
     .nav-link.active {
@@ -157,7 +157,7 @@
     /* Gold bar on the left edge of the active menu item. */
     .nav-link.active::before {
         content: '';
-        @apply absolute top-1/2 -left-3 h-6 w-1 -translate-y-1/2 rounded-r-full bg-ukm-gold;
+        @apply absolute top-1/2 -left-3 h-5 w-1 -translate-y-1/2 rounded-r-full bg-ukm-gold;
     }
 
     .table-head {
@@ -825,5 +825,12 @@
     .ts-dropdown .ts-dropdown-content::-webkit-scrollbar,
     details[data-dropdown] ul::-webkit-scrollbar {
         display: none;
+    }
+}
+
+@layer components {
+    /* Smaller menu icons to match the 13px menu text. */
+    .nav-link svg {
+        @apply h-[18px] w-[18px] shrink-0;
     }
 }
