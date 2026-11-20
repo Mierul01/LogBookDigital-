@@ -25,23 +25,23 @@
 <div data-sidebar-backdrop data-sidebar-toggle class="fixed inset-0 z-30 hidden bg-zinc-950/60 backdrop-blur-sm lg:hidden"></div>
 
 {{-- Sidebar --}}
-<aside data-sidebar class="fixed inset-y-0 left-0 z-40 flex w-72 -translate-x-full flex-col bg-brand-950 transition-transform duration-300 ease-(--ease-out-soft) lg:translate-x-0">
+<aside data-sidebar class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col bg-brand-950 transition-transform duration-300 ease-(--ease-out-soft) lg:translate-x-0">
     {{-- Subtle brand glow at the top of the sidebar --}}
     <div class="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-ukm-gold/10 to-transparent"></div>
 
-    <a href="{{ route('dashboard') }}" class="group relative flex items-center gap-3.5 px-6 pt-8 pb-7">
-        <span class="flex h-12 w-12 shrink-0 items-center justify-center keep-light rounded-2xl bg-white p-1.5 shadow-lg shadow-black/20 ring-1 ring-white/10 transition duration-300 group-hover:scale-105 group-hover:rotate-[-3deg]">
+    <a href="{{ route('dashboard') }}" class="group relative flex items-center gap-3 px-5 pt-6 pb-5">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center keep-light rounded-2xl bg-white p-1.5 shadow-lg shadow-black/20 ring-1 ring-white/10 transition duration-300 group-hover:scale-105 group-hover:rotate-[-3deg]">
             <img src="{{ asset('images/ukm.png') }}" alt="UKM" class="h-full w-full object-contain">
         </span>
         <span class="min-w-0 leading-tight">
-            <span class="block text-[15px] font-bold tracking-tight text-white">Digital LogBook<span class="text-ukm-gold">+</span></span>
-            <span class="mt-1 block text-xs text-slate-400">Universiti Kebangsaan Malaysia</span>
+            <span class="block text-[14px] font-bold tracking-tight text-white">Digital LogBook<span class="text-ukm-gold">+</span></span>
+            <span class="mt-0.5 block text-[10.5px] whitespace-nowrap text-slate-400">Universiti Kebangsaan Malaysia</span>
         </span>
     </a>
 
-    <div class="mx-6 border-t border-white/10"></div>
+    <div class="mx-5 border-t border-white/10"></div>
 
-    <nav class="relative flex-1 overflow-y-auto px-6 pb-6">
+    <nav class="relative flex-1 overflow-y-auto px-5 pb-5">
         <p class="nav-section">Main menu</p>
         <div class="space-y-1">
             <a href="{{ route('dashboard') }}" @class(['nav-link', 'active' => request()->routeIs('dashboard')])>
@@ -87,7 +87,7 @@
     </div>
 </aside>
 
-<div class="lg:pl-72">
+<div class="lg:pl-64">
     {{-- Top bar --}}
     <header data-topbar class="app-topbar sticky top-0 z-20 border-b backdrop-blur-md transition-shadow duration-300">
         @php
