@@ -126,6 +126,18 @@ document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') document.querySelectorAll('details[data-dropdown][open]').forEach((d) => d.removeAttribute('open'));
 });
 
+// Ctrl+K (or Cmd+K) jumps to the search box in the top bar.
+document.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        const search = document.querySelector('[data-global-search]');
+        if (search) {
+            event.preventDefault();
+            search.focus();
+            search.select();
+        }
+    }
+});
+
 // Mobile sidebar toggle.
 document.querySelectorAll('[data-sidebar-toggle]').forEach((button) => {
     button.addEventListener('click', () => {

@@ -33,6 +33,13 @@
     --color-ukm-blue-50: #eef3fb;
     --color-ukm-gold: #f5b41a;
     --color-ukm-gold-50: #fff8e6;
+    --color-ukm-red: #d62828;
+
+    /* Dark navy surfaces for the dashboard (page, card, raised card, line). */
+    --color-ink-950: #060d1f;
+    --color-ink-900: #0b1630;
+    --color-ink-800: #11203f;
+    --color-ink-700: #1a2c52;
 
     --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -511,5 +518,39 @@
 
     @keyframes swal-out {
         to { opacity: 0; transform: scale(0.95); }
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Dark dashboard (layout with dark: true)
+ * ------------------------------------------------------------------------- */
+@layer components {
+    .dash-card {
+        @apply rounded-2xl border border-white/[0.07] bg-ink-900 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset];
+    }
+
+    .dash-head {
+        @apply flex items-center justify-between gap-3 px-4 pt-4 pb-3;
+    }
+
+    .dash-title {
+        @apply flex min-w-0 items-center gap-2.5 truncate text-[15px] font-semibold whitespace-nowrap text-white;
+    }
+
+    .dash-icon {
+        @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg;
+    }
+
+    .dash-link {
+        @apply inline-flex shrink-0 items-center gap-1 text-xs font-medium whitespace-nowrap text-slate-300 transition hover:text-ukm-gold;
+    }
+
+    .theme-dark .table-row {
+        @apply bg-transparent even:bg-white/[0.02] hover:bg-white/[0.04];
+    }
+
+    /* Chart point tooltip */
+    .chart-tip {
+        @apply pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border border-white/10 bg-ink-800 px-2.5 py-1.5 text-xs whitespace-nowrap text-white opacity-0 shadow-lg transition-opacity;
     }
 }
