@@ -11,6 +11,7 @@
                         <th class="px-5 py-3">Semester</th>
                         <th class="px-5 py-3">Dates</th>
                         <th class="px-5 py-3">Week now</th>
+                        <th class="px-5 py-3">Due</th>
                         <th class="px-5 py-3">Projects</th>
                         <th class="px-5 py-3">Entries</th>
                         <th class="px-5 py-3"><span class="sr-only">Actions</span></th>
@@ -30,6 +31,7 @@
                                 @php($week = $semester->currentWeek())
                                 {{ $week === 0 ? 'Not started' : ($semester->endsOn()->isPast() ? 'Finished' : 'Week '.$week) }}
                             </td>
+                            <td class="px-5 py-3 text-zinc-600">{{ $semester->due_days }} {{ Str::plural('day', $semester->due_days) }} after each week</td>
                             <td class="px-5 py-3 text-zinc-600">{{ $semester->projects_count }}</td>
                             <td class="px-5 py-3 text-zinc-600">{{ $semester->logbooks_count }}</td>
                             <td class="px-5 py-3 text-right whitespace-nowrap">
@@ -51,7 +53,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="px-5 py-14 text-center text-sm text-zinc-500">No semesters yet. Add one so students can start their logbook.</td></tr>
+                        <tr><td colspan="7" class="px-5 py-14 text-center text-sm text-zinc-500">No semesters yet. Add one so students can start their logbook.</td></tr>
                     @endforelse
                 </tbody>
             </table>

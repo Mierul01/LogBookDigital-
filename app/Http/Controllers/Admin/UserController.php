@@ -26,6 +26,8 @@ class UserController extends Controller
 
         $users = User::query()
             ->with(['supervisor:id,name', 'projects' => fn ($q) => $q->where('semester_id', $semester?->id)])
+            // Entries for weeks whose deadline has passed (to count overdue weeks).
+            ->withCount(['logbooks as due_logged' => fn ($q) => $q->inSemester($semester)->where('week_no', '<=', $semester?->weeksPastDue() ?? 0)])
             // Logbook progress for the current semester.
             ->withCount([
                 'logbooks' => fn ($q) => $q->inSemester($semester),
@@ -44,6 +46,7 @@ class UserController extends Controller
             ->withQueryString();
 
         return view('admin.users.index', [
+            'pastDue' => $semester?->weeksPastDue() ?? 0,
             'users' => $users,
             'supervisors' => $this->supervisors(),
             'counts' => User::query()->selectRaw('role, count(*) as total')->groupBy('role')->pluck('total', 'role'),

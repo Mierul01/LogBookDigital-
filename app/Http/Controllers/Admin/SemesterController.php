@@ -25,7 +25,7 @@ class SemesterController extends Controller
 
     public function create(): View
     {
-        return view('admin.semesters.form', ['semester' => new Semester(['starts_on' => now()->startOfWeek()])]);
+        return view('admin.semesters.form', ['semester' => new Semester(['starts_on' => now()->startOfWeek(), 'due_days' => 3])]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -87,6 +87,7 @@ class SemesterController extends Controller
         return $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'starts_on' => ['required', 'date'],
-        ], [], ['starts_on' => 'start date']);
+            'due_days' => ['required', 'integer', 'between:0,14'],
+        ], [], ['starts_on' => 'start date', 'due_days' => 'days to submit']);
     }
 }

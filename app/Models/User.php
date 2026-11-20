@@ -120,6 +120,23 @@ class User extends Authenticatable
         return $semester ? $this->projects()->where('semester_id', $semester->id)->first() : null;
     }
 
+    /**
+     * Weeks of the semester whose deadline has passed without an entry.
+     *
+     * @return list<int>
+     */
+    public function overdueWeeks(?Semester $semester = null): array
+    {
+        $semester ??= Semester::current();
+        if (! $semester) {
+            return [];
+        }
+
+        $logged = $this->logbooks()->inSemester($semester)->pluck('week_no')->all();
+
+        return array_values(array_diff(range(1, $semester->weeksPastDue()), $logged));
+    }
+
     /** First week of the current semester the student hasn't logged yet, or null when every week is done. */
     public function nextLogbookWeek(): ?int
     {

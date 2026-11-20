@@ -6,7 +6,7 @@
     $studentsUrl = $user->isCoordinator() ? route('admin.users.index', ['role' => 'student']) : route('students.index');
     $hour = now()->hour;
     $greeting = $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening');
-    $firstName = Str::of($user->name)->replaceMatches('/^(Dr\.?|Prof\.?|Encik|Puan)\s+/i', '')->before(' ');
+    $firstName = Str::of($user->name)->replaceMatches('/^((Prof|Madya|Dr|Ir|Ts|Datuk|Dato|Encik|Puan|Cik)\.?\s+)+/i', '')->before(' ');
 
     // Running totals give the tiles a rising trend line.
     $cumulative = fn (array $values) => array_map(fn ($i) => array_sum(array_slice($values, 0, $i + 1)), array_keys($values));
@@ -24,7 +24,7 @@
             ['Students', $stats['students'], 'users', 'from-sky-400 to-sky-600', '#38bdf8', $cumulative($series['submitted']), ($user->isCoordinator() ? 'In the whole faculty' : 'Under your supervision'), $studentsUrl],
             ['Total entries', $stats['total'], 'document', 'from-brand-400 to-brand-600', '#5583c9', $cumulative($series['submitted']), "+{$stats['this_week']} in the last 7 days", route('logbooks.index')],
             ['Approved', $stats['reviewed'], 'shield', 'from-emerald-400 to-emerald-600', '#34d399', $cumulative($series['approved']), "{$stats['approval_rate']}% of all entries", route('logbooks.index', ['status' => 'approved'])],
-            ['Awaiting review', $stats['pending'], 'clock', 'from-amber-300 to-amber-500', '#f5b41a', $series['pending'], $stats['pending'] ? 'Needs your signature' : 'All caught up', route('logbooks.index', ['status' => 'pending'])],
+            ['Awaiting review', $stats['pending'], 'clock', 'from-amber-300 to-amber-500', '#f5b41a', $series['pending'], $stats['pending'] ? ($user->isCoordinator() ? 'With the supervisors' : 'Needs your signature') : 'All caught up', route('logbooks.index', ['status' => 'pending'])],
         ]
         : [
             ['Weeks logged', $stats['total'].'/'.$stats['weeks'], 'calendar', 'from-sky-400 to-sky-600', '#38bdf8', $cumulative($series['submitted']), $stats['next_week'] ? "Week {$stats['next_week']} is next" : 'Every week is logged', $stats['next_week'] ? route('logbooks.create') : route('logbooks.index')],
@@ -64,7 +64,7 @@
                         <p class="mt-1 text-sm text-slate-200">
                             @if ($isSupervisor)
                                 @if ($stats['pending'])
-                                    You have <span class="font-semibold text-white">{{ $stats['pending'] }} {{ Str::plural('entry', $stats['pending']) }}</span> waiting for your review and signature.
+                                    {{ $user->isCoordinator() ? 'There' : 'You' }} {{ $user->isCoordinator() ? ($stats['pending'] === 1 ? 'is' : 'are') : 'have' }} <span class="font-semibold text-white">{{ $stats['pending'] }} {{ Str::plural('entry', $stats['pending']) }}</span> waiting for {{ $user->isCoordinator() ? 'supervisors to review' : 'your review and signature' }}.
                                 @else
                                     You're all caught up. Every submitted entry has been reviewed.
                                 @endif
@@ -108,6 +108,14 @@
                     </div>
                 </div>
             </section>
+
+            @if (! $isSupervisor && $overdueWeeks)
+                <a href="{{ route('logbooks.create') }}" class="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 transition hover:bg-red-100">
+                    <x-icon name="warning" class="h-5 w-5 shrink-0 text-red-500" />
+                    <span class="flex-1">{{ count($overdueWeeks) === 1 ? 'Week' : 'Weeks' }} <span class="font-semibold">{{ implode(', ', $overdueWeeks) }}</span> {{ count($overdueWeeks) === 1 ? 'is' : 'are' }} past the deadline. Write {{ count($overdueWeeks) === 1 ? 'it' : 'them' }} as soon as you can; late entries are marked "Late".</span>
+                    <x-icon name="chevron-right" class="h-4 w-4 text-red-400" />
+                </a>
+            @endif
 
             {{-- Stat tiles --}}
             <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4" data-reveal-group>
@@ -154,7 +162,9 @@
                         ['Total entries', $stats['total'], $isSupervisor ? "of {$stats['expected']} expected" : "of {$stats['weeks']} weeks"],
                         ['Approval rate', $stats['approval_rate'].'%', $stats['reviewed'].' approved'],
                         ['Avg. review time', $reviewTime, 'submit → signed'],
-                        ['Needs fixing', $stats['revision'], $stats['revision'] ? 'sent back' : 'none sent back'],
+                        $isSupervisor
+                            ? ['Missing weeks', $stats['missing'], 'past the deadline']
+                            : ['Overdue weeks', $stats['missing'], $stats['missing'] ? 'write them now' : 'none overdue'],
                     ] as [$label, $value, $note])
                         <div class="px-4 py-3">
                             <dt class="text-xs text-zinc-500">{{ $label }}</dt>
@@ -211,14 +221,15 @@
                             @foreach ($weeks as $week)
                                 @php $entry = $timeline->get($week); @endphp
                                 <a href="{{ $entry ? route('logbooks.show', $entry) : ($week === $stats['next_week'] ? route('logbooks.create') : '#') }}"
-                                   title="Week {{ $week }}: {{ $entry ? ($entry->isReviewed() ? 'Approved' : ($entry->needsRevision() ? 'Needs fixing' : 'Pending review')) : 'Not logged' }}"
+                                   title="Week {{ $week }}: {{ $entry ? ($entry->isReviewed() ? 'Approved' : ($entry->needsRevision() ? 'Needs fixing' : 'Pending review')) : (in_array($week, $overdueWeeks) ? 'Overdue' : 'Not logged') }}"
                                    @class([
                                        'flex aspect-square items-center justify-center rounded-lg text-xs font-semibold transition hover:-translate-y-0.5',
                                        'bg-emerald-500 text-white' => $entry?->isReviewed(),
                                        'bg-orange-500 text-white' => $entry?->needsRevision(),
                                        'bg-amber-400 text-ink-950' => $entry?->isPending(),
                                        'border-2 border-dashed border-ukm-gold text-ukm-gold' => ! $entry && $week === $stats['next_week'],
-                                       'pointer-events-none bg-zinc-100 text-zinc-400' => ! $entry && $week !== $stats['next_week'],
+                                       'bg-red-500/15 text-red-600 ring-1 ring-red-500/40' => ! $entry && in_array($week, $overdueWeeks) && $week !== $stats['next_week'],
+                                       'pointer-events-none bg-zinc-100 text-zinc-400' => ! $entry && ! in_array($week, $overdueWeeks) && $week !== $stats['next_week'],
                                    ])>{{ $week }}</a>
                             @endforeach
                         </div>
@@ -233,6 +244,29 @@
                             </div>
                         </div>
                     </div>
+                </section>
+            @endif
+
+            @if ($isSupervisor && $behind->isNotEmpty())
+                {{-- Students with weeks missing past the deadline --}}
+                <section class="dash-card" data-reveal>
+                    <div class="dash-head">
+                        <h3 class="dash-title"><span class="dash-icon bg-red-50 text-red-600"><x-icon name="warning" class="h-4 w-4" /></span> Falling behind</h3>
+                    </div>
+                    <ul class="divide-y divide-zinc-100 px-4 pb-2">
+                        @foreach ($behind as $student)
+                            <li>
+                                <a href="{{ route('logbooks.index', ['student' => $student->id]) }}" class="flex items-center gap-3 py-2.5 transition hover:opacity-90">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white ring-2 ring-white">{{ $student->initials() }}</span>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate text-sm font-semibold text-zinc-900">{{ $student->name }}</span>
+                                        <span class="block truncate text-xs text-zinc-500">{{ $student->username }}</span>
+                                    </span>
+                                    <span class="shrink-0 rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-semibold text-red-600">{{ $stats['past_due'] - $student->due_logged }} missing</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
                 </section>
             @endif
 

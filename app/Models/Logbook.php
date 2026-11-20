@@ -87,6 +87,13 @@ class Logbook extends Model
         return $this->status === self::STATUS_APPROVED;
     }
 
+    /** First submitted after the week's deadline. */
+    public function isLate(): bool
+    {
+        return $this->semester !== null && $this->created_at !== null
+            && $this->created_at->gt($this->semester->dueAt($this->week_no));
+    }
+
     public function hadMeeting(): bool
     {
         return $this->meeting_mode !== 'none';

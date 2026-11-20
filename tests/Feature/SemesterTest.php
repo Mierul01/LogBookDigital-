@@ -29,7 +29,7 @@ class SemesterTest extends TestCase
         $coordinator = User::factory()->coordinator()->create();
 
         $this->actingAs($coordinator)->post('/admin/semesters', [
-            'name' => 'Semester 2 2026/2027', 'starts_on' => '2027-03-01', 'is_current' => '1',
+            'name' => 'Semester 2 2026/2027', 'starts_on' => '2027-03-01', 'due_days' => 3, 'is_current' => '1',
         ])->assertSessionHasNoErrors();
 
         $this->assertFalse($old->fresh()->is_current);

@@ -85,6 +85,9 @@
                                     <a href="{{ route('logbooks.index', ['student' => $account->id]) }}" class="block w-36">
                                         <span class="flex justify-between text-xs text-zinc-600"><span>{{ $account->logbooks_count }} entries</span><span class="font-medium text-emerald-600">{{ $account->approved_count }}/{{ App\Models\Logbook::MAX_WEEKS }}</span></span>
                                         <span class="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-zinc-100"><span class="block h-full rounded-full bg-emerald-500" style="width: {{ min(100, round($account->approved_count / App\Models\Logbook::MAX_WEEKS * 100)) }}%"></span></span>
+                                        @if ($pastDue > $account->due_logged)
+                                            <span class="mt-1 block text-xs font-semibold text-red-600">{{ $pastDue - $account->due_logged }} overdue</span>
+                                        @endif
                                     </a>
                                 @else
                                     <span class="text-zinc-400">—</span>

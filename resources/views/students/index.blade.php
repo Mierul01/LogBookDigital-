@@ -42,8 +42,11 @@
                                 <a href="{{ route('logbooks.index', ['student' => $student->id]) }}" class="block w-48">
                                     <div class="flex justify-between text-xs">
                                         <span class="text-zinc-600 group-hover:text-brand-600">{{ $student->logbooks_count }} entries</span>
-                                        <span class="font-medium text-emerald-600">{{ $student->reviewed_count }} reviewed</span>
+                                        <span class="font-medium text-emerald-600">{{ $student->reviewed_count }} approved</span>
                                     </div>
+                                    @if ($pastDue > $student->due_logged)
+                                        <p class="mt-0.5 text-xs font-semibold text-red-600">{{ $pastDue - $student->due_logged }} {{ Str::plural('week', $pastDue - $student->due_logged) }} overdue</p>
+                                    @endif
                                     <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-100">
                                         <div class="h-full w-0 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-[width] duration-1000 ease-(--ease-out-soft)" data-progress="{{ $pct }}"></div>
                                     </div>

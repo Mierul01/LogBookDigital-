@@ -11,13 +11,14 @@ class Semester extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'starts_on', 'is_current'];
+    protected $fillable = ['name', 'starts_on', 'due_days', 'is_current'];
 
     protected function casts(): array
     {
         return [
             'starts_on' => 'date',
             'is_current' => 'boolean',
+            'due_days' => 'integer',
         ];
     }
 
@@ -48,6 +49,18 @@ class Semester extends Model
     public function weekStart(int $week): Carbon
     {
         return $this->starts_on->copy()->addWeeks($week - 1)->startOfDay();
+    }
+
+    /** The deadline for a week's entry: end of the day, due_days after that week's Sunday. */
+    public function dueAt(int $week): Carbon
+    {
+        return $this->weekStart($week)->addDays(6 + ($this->due_days ?? 3))->endOfDay();
+    }
+
+    /** How many weeks' deadlines have already passed. */
+    public function weeksPastDue(): int
+    {
+        return collect(range(1, Logbook::MAX_WEEKS))->filter(fn (int $week) => $this->dueAt($week)->isPast())->count();
     }
 
     /** Last day of the semester. */

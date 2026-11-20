@@ -23,6 +23,8 @@ class StudentController extends Controller
 
         $students = $request->user()->students()
             ->with(['projects' => fn ($q) => $q->where('semester_id', $semester?->id)])
+            // Entries for weeks whose deadline has passed (to count overdue weeks).
+            ->withCount(['logbooks as due_logged' => fn ($q) => $q->inSemester($semester)->where('week_no', '<=', $semester?->weeksPastDue() ?? 0)])
             // Progress in the current semester.
             ->withCount([
                 'logbooks' => fn ($q) => $q->inSemester($semester),
@@ -35,7 +37,7 @@ class StudentController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('students.index', ['students' => $students, 'search' => $search]);
+        return view('students.index', ['students' => $students, 'search' => $search, 'pastDue' => $semester?->weeksPastDue() ?? 0]);
     }
 
     public function create(): View

@@ -1,5 +1,7 @@
 @php
     $editing = $logbook->exists;
+    // Due dates come from the entry's semester (the current one for a new entry).
+    $dueSemester = $logbook->semester ?? App\Models\Semester::current();
 @endphp
 
 <x-layouts.app :title="$editing ? 'Edit Week '.$logbook->week_no : 'New Logbook Entry'"
@@ -39,7 +41,7 @@
                         <select id="week_no" name="week_no" required data-select @class(['input', 'input-error' => $errors->has('week_no')])>
                             @foreach (range(1, App\Models\Logbook::MAX_WEEKS) as $week)
                                 <option value="{{ $week }}" @selected(old('week_no', $logbook->week_no) == $week)
-                                        @disabled(in_array($week, $usedWeeks)) @if (in_array($week, $usedWeeks)) data-badge="Logged" @endif>Week {{ $week }}</option>
+                                        @disabled(in_array($week, $usedWeeks)) @if (in_array($week, $usedWeeks)) data-badge="Logged" @endif>Week {{ $week }}{{ $dueSemester ? ' · due '.$dueSemester->dueAt($week)->format('D j M') : '' }}</option>
                             @endforeach
                         </select>
                     </x-field>

@@ -70,7 +70,7 @@
                             @endif
                         </h2>
                         @if ($entry)
-                            <x-status-badge :logbook="$entry" />
+                            <span class="flex items-center gap-1.5"><x-late-badge :logbook="$entry" /> <x-status-badge :logbook="$entry" /></span>
                         @endif
                     </div>
                     @if ($entry)
@@ -118,7 +118,7 @@
                             </div>
                         </div>
                     @else
-                        <p class="mt-2 text-sm text-zinc-400">No entry for this week.</p>
+                        <p class="mt-2 text-sm text-zinc-400">No entry for this week.@if ($semester && $semester->dueAt($week)->isPast()) <span class="font-semibold text-red-600">Overdue (due {{ $semester->dueAt($week)->format('j M Y') }}).</span>@endif</p>
                     @endif
                 </section>
             @endforeach

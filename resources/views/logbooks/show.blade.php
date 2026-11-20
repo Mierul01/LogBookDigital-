@@ -39,7 +39,7 @@
                             <p class="mt-0.5 flex items-center gap-1.5 text-sm text-zinc-500"><x-icon name="users" class="h-4 w-4" /> {{ $logbook->meetingSummary() }}</p>
                         </div>
                     </div>
-                    <x-status-badge :logbook="$logbook" />
+                    <div class="flex items-center gap-1.5"><x-late-badge :logbook="$logbook" /> <x-status-badge :logbook="$logbook" /></div>
                 </div>
             </div>
 

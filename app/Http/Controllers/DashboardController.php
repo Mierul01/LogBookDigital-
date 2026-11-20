@@ -60,6 +60,12 @@ class DashboardController extends Controller
 
         $thisWeek = $scope()->where('created_at', '>=', now()->subDays(7))->count();
 
+        // Weeks whose deadline has passed: every student should have an entry for each of them.
+        $pastDue = $semester?->weeksPastDue() ?? 0;
+        $missing = $user->isStaff()
+            ? max(0, $students * $pastDue - $scope()->where('week_no', '<=', $pastDue)->count())
+            : count($user->overdueWeeks($semester));
+
         return view('dashboard', [
             'user' => $user,
             'weeks' => $weeks,
@@ -72,6 +78,8 @@ class DashboardController extends Controller
                 'weeks' => Logbook::MAX_WEEKS,
                 'next_week' => $user->isStudent() ? $user->nextLogbookWeek() : null,
                 'this_week' => $thisWeek,
+                'past_due' => $pastDue,
+                'missing' => $missing,
                 'approval_rate' => $total ? round($byStatus[Logbook::STATUS_APPROVED] / $total * 100) : 0,
                 'review_hours' => $reviewHours,
                 // Entries the supervisor could expect so far (each student x weeks).
@@ -89,6 +97,17 @@ class DashboardController extends Controller
             'timeline' => $user->isStudent() ? $user->logbooks()->inSemester($semester)->get(['id', 'week_no', 'status'])->keyBy('week_no') : collect(),
             'semester' => $semester,
             'project' => $user->isStudent() ? $user->project($semester) : null,
+            'overdueWeeks' => $user->isStudent() ? $user->overdueWeeks($semester) : [],
+            // Staff: students with the most weeks missing past their deadline.
+            'behind' => $user->isStaff() && $pastDue
+                ? $studentQuery()
+                    ->withCount(['logbooks as due_logged' => fn ($q) => $q->inSemester($semester)->where('week_no', '<=', $pastDue)])
+                    ->orderBy('due_logged')
+                    ->orderBy('name')
+                    ->take(5)
+                    ->get()
+                    ->filter(fn ($s) => $s->due_logged < $pastDue)
+                : collect(),
             // Supervisor: students with the most approved weeks.
             'topStudents' => $user->isStaff()
                 ? $studentQuery()

@@ -98,7 +98,7 @@
                             <td class="max-w-md px-6 py-4 text-zinc-700">
                                 <a href="{{ route('logbooks.show', $logbook) }}" class="line-clamp-2 hover:text-brand-700">{{ $logbook->progress }}</a>
                             </td>
-                            <td class="px-6 py-4"><x-status-badge :logbook="$logbook" /></td>
+                            <td class="px-6 py-4"><div class="flex flex-wrap items-center gap-1.5"><x-status-badge :logbook="$logbook" /> <x-late-badge :logbook="$logbook" /></div></td>
                             <td class="px-6 py-4 text-right whitespace-nowrap print:hidden">
                                 <div class="inline-flex items-center gap-1">
                                     @if ($needsReview)
