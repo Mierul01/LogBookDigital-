@@ -17,14 +17,14 @@
     {{-- Y axis --}}
     <div class="relative mb-6 w-6 shrink-0">
         @foreach ([1, 0.75, 0.5, 0.25, 0] as $step)
-            <span class="absolute right-0 -translate-y-1/2 text-[11px] text-slate-400" style="top: {{ (1 - $step) * 100 }}%">{{ round($max * $step) }}</span>
+            <span class="absolute right-0 -translate-y-1/2 text-[11px] text-zinc-500" style="top: {{ (1 - $step) * 100 }}%">{{ round($max * $step) }}</span>
         @endforeach
     </div>
 
     <div class="flex min-w-0 flex-1 flex-col">
         <div class="relative flex-1">
             @foreach ([0, 25, 50, 75, 100] as $line)
-                <div class="absolute inset-x-0 border-t border-dashed border-white/[0.08]" style="top: {{ $line }}%"></div>
+                <div class="absolute inset-x-0 border-t border-dashed border-zinc-200" style="top: {{ $line }}%"></div>
             @endforeach
 
             <svg viewBox="0 0 {{ $w }} {{ $h }}" preserveAspectRatio="none" class="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
@@ -49,9 +49,9 @@
             {{-- One hover column per label, with dots and a tooltip --}}
             @foreach ($labels as $i => $label)
                 <div class="group absolute inset-y-0 w-8 -translate-x-1/2" style="left: {{ $xAt($i) }}%">
-                    <div class="absolute inset-y-0 left-1/2 border-l border-transparent transition group-hover:border-white/15"></div>
+                    <div class="absolute inset-y-0 left-1/2 border-l border-transparent transition group-hover:border-zinc-300"></div>
                     @foreach ($series as $s)
-                        <span class="absolute left-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink-900 transition group-hover:scale-150"
+                        <span class="absolute left-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white transition group-hover:scale-150"
                               style="top: {{ 100 - $s['values'][$i] / $max * 100 }}%; background: {{ $s['color'] }}"></span>
                     @endforeach
                     @php($topY = 100 - max(array_map(fn ($s) => $s['values'][$i], $series)) / $max * 100)
@@ -68,7 +68,7 @@
         {{-- X axis --}}
         <div class="relative mt-1.5 h-4.5">
             @foreach ($labels as $i => $label)
-                <span class="absolute -translate-x-1/2 text-[11px] whitespace-nowrap text-slate-400" style="left: {{ $xAt($i) }}%">{{ $label }}</span>
+                <span class="absolute -translate-x-1/2 text-[11px] whitespace-nowrap text-zinc-500" style="left: {{ $xAt($i) }}%">{{ $label }}</span>
             @endforeach
         </div>
     </div>

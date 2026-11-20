@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Light/dark choice from the top-bar switch, set by resources/js/app.js.
+        $middleware->encryptCookies(except: ['theme']);
+
         $middleware->alias([
             'role' => EnsureRole::class,
         ]);
