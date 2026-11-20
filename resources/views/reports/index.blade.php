@@ -3,22 +3,22 @@
     $query = array_filter($filters);
 @endphp
 
-<x-layouts.app title="Reports" :subtitle="($report->semester?->name ?? 'All semesters').' · '.($isCoordinator ? 'whole faculty' : 'your students')">
+<x-layouts.app title="{{ __('Reports') }}" :subtitle="($report->semester?->name ?? 'All semesters').' · '.($isCoordinator ? 'whole faculty' : 'your students')">
     <x-slot:actions>
-        <button type="button" onclick="window.print()" class="btn btn-secondary hidden sm:inline-flex"><x-icon name="printer" class="h-4 w-4" /> Print / PDF</button>
-        <a href="{{ route('reports.students.export', $query) }}" class="btn btn-primary"><x-icon name="document" class="h-4 w-4" /> <span class="hidden sm:inline">Export to Excel</span></a>
+        <button type="button" onclick="window.print()" class="btn btn-secondary hidden sm:inline-flex"><x-icon name="printer" class="h-4 w-4" /> {{ __('Print / PDF') }}</button>
+        <a href="{{ route('reports.students.export', $query) }}" class="btn btn-primary"><x-icon name="document" class="h-4 w-4" /> <span class="hidden sm:inline">{{ __('Export to Excel') }}</span></a>
     </x-slot:actions>
 
     {{-- Filters --}}
     <form method="GET" class="mb-4 flex animate-fade-up flex-wrap items-center gap-3 print:hidden">
         <select name="semester" onchange="this.form.submit()" data-select class="input w-auto min-w-52">
             @foreach ($semesters as $s)
-                <option value="{{ $s->id }}" @selected($filters['semester'] === $s->id)>{{ $s->name }}{{ $s->is_current ? ' (current)' : '' }}</option>
+                <option value="{{ $s->id }}" @selected($filters['semester'] === $s->id)>{{ $s->name }}{{ __($s->is_current ? ' (current)' : '') }}</option>
             @endforeach
         </select>
         @if ($isCoordinator)
             <select name="supervisor" onchange="this.form.submit()" data-select class="input w-auto min-w-56">
-                <option value="">All supervisors</option>
+                <option value="">{{ __('All supervisors') }}</option>
                 @foreach ($supervisorOptions as $s)
                     <option value="{{ $s->id }}" @selected($filters['supervisor'] === $s->id)>{{ $s->name }}</option>
                 @endforeach
@@ -26,7 +26,7 @@
         @endif
         <label class="input-icon-wrap relative">
             <x-icon name="search" class="input-icon pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-            <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Student name or matric…" class="input w-60 py-2.5 pl-9">
+            <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="{{ __('Student name or matric…') }}" class="input w-60 py-2.5 pl-9">
         </label>
         <p class="ml-auto text-sm text-zinc-500">{{ $report->pastDue() }} of {{ App\Models\Logbook::MAX_WEEKS }} weeks past their deadline</p>
     </form>
@@ -38,22 +38,22 @@
                 <div class="flex items-center gap-3">
                     <span class="card-icon bg-sky-50 text-sky-600"><x-icon name="users" class="h-5 w-5" /></span>
                     <div>
-                        <h2 class="font-semibold">By supervisor</h2>
-                        <p class="text-xs text-zinc-500">Entries, approvals and missing weeks for each supervisor's students</p>
+                        <h2 class="font-semibold">{{ __('By supervisor') }}</h2>
+                        <p class="text-xs text-zinc-500">{{ __('Entries, approvals and missing weeks for each supervisor\'s students') }}</p>
                     </div>
                 </div>
-                <a href="{{ route('reports.supervisors.export', $query) }}" class="btn btn-secondary px-3 py-1.5 text-xs print:hidden"><x-icon name="document" class="h-3.5 w-3.5" /> Export</a>
+                <a href="{{ route('reports.supervisors.export', $query) }}" class="btn btn-secondary px-3 py-1.5 text-xs print:hidden"><x-icon name="document" class="h-3.5 w-3.5" /> {{ __('Export') }}</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
                     <thead class="table-head">
                         <tr>
-                            <th class="px-5 py-2.5">Supervisor</th>
-                            <th class="px-5 py-2.5 text-right">Students</th>
-                            <th class="px-5 py-2.5 text-right">Entries</th>
-                            <th class="px-5 py-2.5 text-right">Approved</th>
-                            <th class="px-5 py-2.5 text-right">Pending</th>
-                            <th class="px-5 py-2.5 text-right">Missing weeks</th>
+                            <th class="px-5 py-2.5">{{ __('Supervisor') }}</th>
+                            <th class="px-5 py-2.5 text-right">{{ __('Students') }}</th>
+                            <th class="px-5 py-2.5 text-right">{{ __('Entries') }}</th>
+                            <th class="px-5 py-2.5 text-right">{{ __('Approved') }}</th>
+                            <th class="px-5 py-2.5 text-right">{{ __('Pending') }}</th>
+                            <th class="px-5 py-2.5 text-right">{{ __('Missing weeks') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-zinc-100">
@@ -68,7 +68,7 @@
                                 <td @class(['px-5 py-2.5 text-right', 'font-semibold text-red-600' => $missing, 'text-zinc-400' => ! $missing])>{{ $missing }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="px-5 py-8 text-center text-zinc-500">No supervisors yet.</td></tr>
+                            <tr><td colspan="6" class="px-5 py-8 text-center text-zinc-500">{{ __('No supervisors yet.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -84,24 +84,24 @@
         <div class="card-header px-5 py-4">
             <span class="card-icon bg-brand-50 text-brand-600"><x-icon name="chart" class="h-5 w-5" /></span>
             <div>
-                <h2 class="font-semibold">Student progress</h2>
-                <p class="text-xs text-zinc-500">{{ $students->total() }} {{ Str::plural('student', $students->total()) }}</p>
+                <h2 class="font-semibold">{{ __('Student progress') }}</h2>
+                <p class="text-xs text-zinc-500">{{ $students->total() }} {{ __(Str::plural('student', $students->total())) }}</p>
             </div>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
                 <thead class="table-head">
                     <tr>
-                        <th class="px-5 py-2.5">Student</th>
-                        @if ($isCoordinator) <th class="px-5 py-2.5">Supervisor</th> @endif
-                        <th class="px-5 py-2.5 text-right">Entries</th>
-                        <th class="px-5 py-2.5 text-right">Approved</th>
-                        <th class="px-5 py-2.5 text-right">Pending</th>
-                        <th class="px-5 py-2.5 text-right">Fixing</th>
-                        <th class="px-5 py-2.5 text-right">Late</th>
-                        <th class="px-5 py-2.5 text-right">Overdue</th>
-                        <th class="px-5 py-2.5 text-right">Meetings</th>
-                        <th class="px-5 py-2.5 print:hidden"><span class="sr-only">Logbook</span></th>
+                        <th class="px-5 py-2.5">{{ __('Student') }}</th>
+                        @if ($isCoordinator) <th class="px-5 py-2.5">{{ __('Supervisor') }}</th> @endif
+                        <th class="px-5 py-2.5 text-right">{{ __('Entries') }}</th>
+                        <th class="px-5 py-2.5 text-right">{{ __('Approved') }}</th>
+                        <th class="px-5 py-2.5 text-right">{{ __('Pending') }}</th>
+                        <th class="px-5 py-2.5 text-right">{{ __('Fixing') }}</th>
+                        <th class="px-5 py-2.5 text-right">{{ __('Late') }}</th>
+                        <th class="px-5 py-2.5 text-right">{{ __('Overdue') }}</th>
+                        <th class="px-5 py-2.5 text-right">{{ __('Meetings') }}</th>
+                        <th class="px-5 py-2.5 print:hidden"><span class="sr-only">{{ __('Logbook') }}</span></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-100">
@@ -120,11 +120,11 @@
                             <td @class(['px-5 py-2.5 text-right', 'font-semibold text-red-600' => $r['overdue'], 'text-zinc-400' => ! $r['overdue']])>{{ $r['overdue'] }}</td>
                             <td class="px-5 py-2.5 text-right text-zinc-600">{{ $r['meetings'] }}</td>
                             <td class="px-5 py-2.5 text-right whitespace-nowrap print:hidden">
-                                <a href="{{ route('logbooks.report', ['student' => $r['student']->id, 'semester' => $filters['semester']]) }}" title="Full logbook" class="icon-btn"><x-icon name="printer" class="h-4 w-4" /></a>
+                                <a href="{{ route('logbooks.report', ['student' => $r['student']->id, 'semester' => $filters['semester']]) }}" title="{{ __('Full logbook') }}" class="icon-btn"><x-icon name="printer" class="h-4 w-4" /></a>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="10" class="px-5 py-10 text-center text-zinc-500">No students match these filters.</td></tr>
+                        <tr><td colspan="10" class="px-5 py-10 text-center text-zinc-500">{{ __('No students match these filters.') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

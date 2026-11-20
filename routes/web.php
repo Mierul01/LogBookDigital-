@@ -15,6 +15,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
 
+// EN / BM switch: remember the language for a year and go back to the same page.
+Route::get('locale/{locale}', function (string $locale) {
+    abort_unless(in_array($locale, \App\Http\Middleware\SetLocale::LOCALES, true), 404);
+
+    return back()->withCookie(cookie('locale', $locale, 60 * 24 * 365, httpOnly: false));
+})->name('locale');
+
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'create'])->name('login');
     Route::post('login', [LoginController::class, 'store']);

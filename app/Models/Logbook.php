@@ -132,11 +132,11 @@ class Logbook extends Model
     public function meetingSummary(): string
     {
         if (! $this->hadMeeting()) {
-            return self::MEETING_MODES['none'];
+            return __(self::MEETING_MODES['none']);
         }
 
         return collect([
-            self::MEETING_MODES[$this->meeting_mode] ?? $this->meeting_mode,
+            __(self::MEETING_MODES[$this->meeting_mode] ?? $this->meeting_mode),
             $this->meeting_time ? \Illuminate\Support\Carbon::parse($this->meeting_time)->format('g:i a') : null,
             $this->meeting_minutes ? $this->meeting_minutes.' min' : null,
             $this->meeting_place,

@@ -1,4 +1,4 @@
-<x-layouts.app title="My Profile" subtitle="Manage your personal details and account security">
+<x-layouts.app title="{{ __('My Profile') }}" subtitle="{{ __('Manage your personal details and account security') }}">
     {{-- Profile header --}}
     <section class="card animate-fade-up overflow-hidden">
         <div class="relative h-36 overflow-hidden bg-brand-950 sm:h-44">
@@ -23,13 +23,13 @@
                                 <x-icon name="identification" class="h-4 w-4 text-zinc-500" /> {{ $user->username }}
                             </span>
                             <span class="inline-flex items-center gap-1.5 text-zinc-500">
-                                <x-icon name="building" class="h-4 w-4" /> Universiti Kebangsaan Malaysia
+                                <x-icon name="building" class="h-4 w-4" /> {{ __('Universiti Kebangsaan Malaysia') }}
                             </span>
                         </div>
                     </div>
                 </div>
                 <a href="{{ route('logbooks.index') }}" class="btn btn-secondary self-start sm:self-auto">
-                    <x-icon name="book" class="h-4 w-4" /> {{ $user->isStudent() ? 'My logbook' : 'Student logbooks' }}
+                    <x-icon name="book" class="h-4 w-4" /> {{ __($user->isStudent() ? 'My logbook' : 'Student logbooks') }}
                 </a>
             </div>
 
@@ -56,7 +56,7 @@
                             <x-icon :name="$icon" class="h-5 w-5" />
                         </span>
                         <div class="min-w-0">
-                            <dt class="truncate text-xs text-zinc-500">{{ $label }}</dt>
+                            <dt class="truncate text-xs text-zinc-500">{{ __($label) }}</dt>
                             <dd class="truncate text-base font-bold text-zinc-900">{{ $value }}</dd>
                         </div>
                     </div>
@@ -72,8 +72,8 @@
                 <div class="card-header">
                     <span class="card-icon bg-sky-50 text-sky-600"><x-icon name="identification" class="h-5 w-5" /></span>
                     <div>
-                        <h3 class="font-semibold">Account details</h3>
-                        <p class="text-xs text-zinc-500">Read-only information</p>
+                        <h3 class="font-semibold">{{ __('Account details') }}</h3>
+                        <p class="text-xs text-zinc-500">{{ __('Read-only information') }}</p>
                     </div>
                 </div>
                 <dl class="divide-y divide-zinc-100 px-6">
@@ -85,7 +85,7 @@
                         ['Member since', $user->created_at->format('j F Y')],
                     ]) as [$label, $value])
                         <div class="flex items-center justify-between gap-4 py-3.5 text-sm">
-                            <dt class="text-zinc-500">{{ $label }}</dt>
+                            <dt class="text-zinc-500">{{ __($label) }}</dt>
                             <dd class="truncate text-right font-medium text-zinc-900">{{ $value }}</dd>
                         </div>
                     @endforeach
@@ -96,11 +96,11 @@
                 <div class="flex gap-4 bg-gradient-to-br from-amber-50 to-white p-6">
                     <span class="card-icon bg-amber-100 text-amber-600"><x-icon name="key" class="h-5 w-5" /></span>
                     <div>
-                        <h3 class="font-semibold">Keep your account safe</h3>
+                        <h3 class="font-semibold">{{ __('Keep your account safe') }}</h3>
                         <ul class="mt-2 space-y-1.5 text-sm text-zinc-600">
-                            <li class="flex gap-2"><x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" /> Use at least 8 characters</li>
-                            <li class="flex gap-2"><x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" /> Mix letters, numbers and symbols</li>
-                            <li class="flex gap-2"><x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" /> Don't reuse your UKM email password</li>
+                            <li class="flex gap-2"><x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" /> {{ __('Use at least 8 characters') }}</li>
+                            <li class="flex gap-2"><x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" /> {{ __('Mix letters, numbers and symbols') }}</li>
+                            <li class="flex gap-2"><x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" /> {{ __('Don\'t reuse your UKM email password') }}</li>
                         </ul>
                     </div>
                 </div>
@@ -115,28 +115,28 @@
                     <div class="card-header">
                         <span class="card-icon bg-ukm-gold/15 text-amber-600"><x-icon name="academic-cap" class="h-5 w-5" /></span>
                         <div>
-                            <h3 class="font-semibold">Final Year Project</h3>
+                            <h3 class="font-semibold">{{ __('Final Year Project') }}</h3>
                             <p class="text-xs text-zinc-500">{{ $semester?->name ?? 'No current semester yet' }} · shown on your logbook and its printout</p>
                         </div>
                     </div>
                     @if ($semester)
                         <div class="grid gap-5 p-6 sm:grid-cols-3">
-                            <x-field name="title" label="Project title" bag="project" class="sm:col-span-2">
-                                <x-icon-input icon="document" name="title" value="{{ old('title', $project?->title) }}" required placeholder="e.g. QR code attendance app for UKM lectures" />
+                            <x-field name="title" label="{{ __('Project title') }}" bag="project" class="sm:col-span-2">
+                                <x-icon-input icon="document" name="title" value="{{ old('title', $project?->title) }}" required placeholder="{{ __('e.g. QR code attendance app for UKM lectures') }}" />
                             </x-field>
-                            <x-field name="stage" label="Stage" bag="project">
+                            <x-field name="stage" label="{{ __('Stage') }}" bag="project">
                                 <select id="stage" name="stage" data-select class="input">
                                     @foreach (App\Models\Project::STAGES as $value => $label)
-                                        <option value="{{ $value }}" @selected(old('stage', $project?->stage) === $value)>{{ $label }}</option>
+                                        <option value="{{ $value }}" @selected(old('stage', $project?->stage) === $value)>{{ __($label) }}</option>
                                     @endforeach
                                 </select>
                             </x-field>
                         </div>
                         <div class="flex justify-end rounded-b-2xl border-t border-zinc-100 bg-zinc-50/60 px-6 py-4">
-                            <button type="submit" class="btn btn-primary"><x-icon name="check" class="h-4 w-4" /> Save project</button>
+                            <button type="submit" class="btn btn-primary"><x-icon name="check" class="h-4 w-4" /> {{ __('Save project') }}</button>
                         </div>
                     @else
-                        <p class="px-6 py-5 text-sm text-zinc-500">Your FYP coordinator hasn't opened a semester yet.</p>
+                        <p class="px-6 py-5 text-sm text-zinc-500">{{ __('Your FYP coordinator hasn\'t opened a semester yet.') }}</p>
                     @endif
                 </form>
             @endif
@@ -146,29 +146,29 @@
                 <div class="card-header">
                     <span class="card-icon bg-brand-50 text-brand-600"><x-icon name="user" class="h-5 w-5" /></span>
                     <div>
-                        <h3 class="font-semibold">Personal information</h3>
-                        <p class="text-xs text-zinc-500">Update the name and email shown to your {{ $user->isStudent() ? 'supervisor' : 'students' }}</p>
+                        <h3 class="font-semibold">{{ __('Personal information') }}</h3>
+                        <p class="text-xs text-zinc-500">Update the name and email shown to your {{ __($user->isStudent() ? 'supervisor' : 'students') }}</p>
                     </div>
                 </div>
                 <div class="grid gap-6 p-6 sm:grid-cols-2">
-                    <x-field name="name" label="Full name" class="sm:col-span-2">
+                    <x-field name="name" label="{{ __('Full name') }}" class="sm:col-span-2">
                         <x-icon-input icon="user" name="name" value="{{ old('name', $user->name) }}" required autocomplete="name" />
                     </x-field>
                     <x-field name="username" :label="$user->isStudent() ? 'Matric no.' : 'Username'" :hint="$user->isStudent() ? 'Contact your supervisor to change this.' : 'Your username cannot be changed.'">
                         <x-icon-input icon="identification" name="username" value="{{ $user->username }}" disabled />
                     </x-field>
-                    <x-field name="email" label="Email address">
-                        <x-icon-input icon="envelope" name="email" type="email" value="{{ old('email', $user->email) }}" autocomplete="email" placeholder="you@siswa.ukm.edu.my" />
+                    <x-field name="email" label="{{ __('Email address') }}">
+                        <x-icon-input icon="envelope" name="email" type="email" value="{{ old('email', $user->email) }}" autocomplete="email" placeholder="{{ __('you@siswa.ukm.edu.my') }}" />
                     </x-field>
                     <label class="flex items-start gap-2.5 text-sm text-zinc-700 sm:col-span-2">
                         <input type="hidden" name="email_notifications" value="0">
                         <input type="checkbox" name="email_notifications" value="1" @checked(old('email_notifications', $user->email_notifications ?? true)) class="mt-0.5 h-4 w-4 rounded border-zinc-300 text-brand-600 focus:ring-brand-500">
-                        <span>Email me about my logbook too <span class="block text-xs text-zinc-500">{{ $user->isStudent() ? 'Approvals, entries sent back, and a reminder on the day a week is due.' : 'New and resent entries, and a Monday summary of what is waiting for you.' }}</span></span>
+                        <span>{{ __('Email me about my logbook too') }} <span class="block text-xs text-zinc-500">{{ __($user->isStudent() ? 'Approvals, entries sent back, and a reminder on the day a week is due.' : 'New and resent entries, and a Monday summary of what is waiting for you.') }}</span></span>
                     </label>
                 </div>
                 <div class="flex items-center justify-end gap-3 rounded-b-2xl border-t border-zinc-100 bg-zinc-50/60 px-6 py-4">
-                    <button type="reset" class="btn btn-secondary">Reset</button>
-                    <button type="submit" class="btn btn-primary"><x-icon name="check" class="h-4 w-4" /> Save changes</button>
+                    <button type="reset" class="btn btn-secondary">{{ __('Reset') }}</button>
+                    <button type="submit" class="btn btn-primary"><x-icon name="check" class="h-4 w-4" /> {{ __('Save changes') }}</button>
                 </div>
             </form>
 
@@ -177,23 +177,23 @@
                 <div class="card-header">
                     <span class="card-icon bg-zinc-100 text-zinc-700"><x-icon name="lock" class="h-5 w-5" /></span>
                     <div>
-                        <h3 class="font-semibold">Change password</h3>
-                        <p class="text-xs text-zinc-500">You'll stay signed in on this device</p>
+                        <h3 class="font-semibold">{{ __('Change password') }}</h3>
+                        <p class="text-xs text-zinc-500">{{ __('You\'ll stay signed in on this device') }}</p>
                     </div>
                 </div>
                 <div class="grid gap-6 p-6 sm:grid-cols-2">
-                    <x-field name="current_password" label="Current password" bag="password" class="sm:col-span-2">
+                    <x-field name="current_password" label="{{ __('Current password') }}" bag="password" class="sm:col-span-2">
                         <x-icon-input icon="lock" name="current_password" type="password" bag="password" required autocomplete="current-password" />
                     </x-field>
-                    <x-field name="password" label="New password" bag="password" hint="At least 6 characters.">
+                    <x-field name="password" label="{{ __('New password') }}" bag="password" hint="{{ __('At least 6 characters.') }}">
                         <x-icon-input icon="key" name="password" type="password" bag="password" required autocomplete="new-password" />
                     </x-field>
-                    <x-field name="password_confirmation" label="Confirm new password" bag="password">
+                    <x-field name="password_confirmation" label="{{ __('Confirm new password') }}" bag="password">
                         <x-icon-input icon="key" name="password_confirmation" type="password" bag="password" required autocomplete="new-password" />
                     </x-field>
                 </div>
                 <div class="flex justify-end rounded-b-2xl border-t border-zinc-100 bg-zinc-50/60 px-6 py-4">
-                    <button type="submit" class="btn btn-primary"><x-icon name="shield" class="h-4 w-4" /> Update password</button>
+                    <button type="submit" class="btn btn-primary"><x-icon name="shield" class="h-4 w-4" /> {{ __('Update password') }}</button>
                 </div>
             </form>
         </div>

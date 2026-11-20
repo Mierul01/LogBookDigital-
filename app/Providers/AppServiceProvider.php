@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Dates and "2 hours ago" follow the EN / BM switch.
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Foundation\Events\LocaleUpdated::class, fn ($e) => \Illuminate\Support\Carbon::setLocale($e->locale));
         //
     }
 }

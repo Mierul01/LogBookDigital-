@@ -86,7 +86,7 @@
                                 'Tugasan Minggu Hadapan' => $entry->next_week_task,
                             ] as $label => $value)
                                 <div>
-                                    <dt class="text-xs font-semibold text-zinc-500">{{ $label }}</dt>
+                                    <dt class="text-xs font-semibold text-zinc-500">{{ __($label) }}</dt>
                                     <dd class="mt-0.5 leading-relaxed whitespace-pre-line text-zinc-800">{{ $value }}</dd>
                                 </div>
                             @endforeach

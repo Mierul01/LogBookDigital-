@@ -10,7 +10,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title }} · {{ config('app.name') }}</title>
+    <title>{{ __($title) }} · {{ config('app.name') }}</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet">
@@ -34,54 +34,54 @@
             <img src="{{ asset('images/ukm.png') }}" alt="UKM" class="h-full w-full object-contain">
         </span>
         <span class="min-w-0 leading-tight">
-            <span class="block text-[14px] font-bold tracking-tight text-white">Digital LogBook<span class="text-ukm-gold">+</span></span>
-            <span class="mt-0.5 block text-[10.5px] whitespace-nowrap text-slate-400">Universiti Kebangsaan Malaysia</span>
+            <span class="block text-[14px] font-bold tracking-tight text-white">{{ __('Digital LogBook') }}<span class="text-ukm-gold">+</span></span>
+            <span class="mt-0.5 block text-[10.5px] whitespace-nowrap text-slate-400">{{ __('Universiti Kebangsaan Malaysia') }}</span>
         </span>
     </a>
 
     <div class="mx-5 border-t border-white/10"></div>
 
     <nav class="relative flex-1 overflow-y-auto px-5 pb-5">
-        <p class="nav-section">Main menu</p>
+        <p class="nav-section">{{ __('Main menu') }}</p>
         <div class="space-y-1">
             <a href="{{ route('dashboard') }}" @class(['nav-link', 'active' => request()->routeIs('dashboard')])>
-                <x-icon name="home" /> Dashboard
+                <x-icon name="home" /> {{ __('Dashboard') }}
             </a>
             <a href="{{ route('logbooks.index') }}" @class(['nav-link', 'active' => request()->routeIs('logbooks.*') && ! request()->routeIs('logbooks.create')])>
-                <x-icon name="book" /> {{ $user->isStaff() ? 'Student Logbooks' : 'My Logbook' }}
+                <x-icon name="book" /> {{ __($user->isStaff() ? 'Student Logbooks' : 'My Logbook') }}
             </a>
             @if ($user->isCoordinator())
                 <a href="{{ route('admin.users.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.users.*', 'admin.import.*')])>
-                    <x-icon name="users" /> Users
+                    <x-icon name="users" /> {{ __('Users') }}
                 </a>
                 <a href="{{ route('admin.semesters.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.semesters.*')])>
-                    <x-icon name="calendar" /> Semesters
+                    <x-icon name="calendar" /> {{ __('Semesters') }}
                 </a>
             @elseif ($user->isSupervisor())
                 <a href="{{ route('students.index') }}" @class(['nav-link', 'active' => request()->routeIs('students.*')])>
-                    <x-icon name="users" /> Students
+                    <x-icon name="users" /> {{ __('Students') }}
                 </a>
             @endif
             @if ($user->isStaff())
                 <a href="{{ route('reports.index') }}" @class(['nav-link', 'active' => request()->routeIs('reports.*')])>
-                    <x-icon name="chart" /> Reports
+                    <x-icon name="chart" /> {{ __('Reports') }}
                 </a>
             @else
                 <a href="{{ route('logbooks.create') }}" @class(['nav-link', 'active' => request()->routeIs('logbooks.create')])>
-                    <x-icon name="plus" /> New Entry
+                    <x-icon name="plus" /> {{ __('New Entry') }}
                 </a>
             @endif
         </div>
 
-        <p class="nav-section">Account</p>
+        <p class="nav-section">{{ __('Account') }}</p>
         <div class="space-y-1">
             <a href="{{ route('profile') }}" @class(['nav-link', 'active' => request()->routeIs('profile')])>
-                <x-icon name="user" /> Profile
+                <x-icon name="user" /> {{ __('Profile') }}
             </a>
             <form method="POST" action="{{ route('logout') }}" data-confirm="You will need to sign in again to access your logbook." data-confirm-title="Log out?" data-confirm-button="Yes, log out" data-confirm-icon="question">
                 @csrf
                 <button type="submit" class="nav-link w-full hover:text-red-300">
-                    <x-icon name="logout" /> Log out
+                    <x-icon name="logout" /> {{ __('Log out') }}
                 </button>
             </form>
         </div>
@@ -92,7 +92,7 @@
             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-ukm-gold to-amber-500 text-sm font-bold text-brand-950">{{ $user->initials() }}</span>
             <span class="min-w-0 flex-1">
                 <span class="block truncate text-sm font-semibold text-white">{{ $user->name }}</span>
-                <span class="block truncate text-xs text-slate-400">{{ ucfirst($user->role) }} · {{ $user->username }}</span>
+                <span class="block truncate text-xs text-slate-400">{{ __(ucfirst($user->role)) }} · {{ $user->username }}</span>
             </span>
             <x-icon name="chevron-right" class="h-4 w-4 text-zinc-500" />
         </a>
@@ -122,18 +122,18 @@
             <div class="min-w-0 flex-1 animate-fade-in">
                 <nav aria-label="Breadcrumb" class="flex items-center gap-1 text-[11px] font-medium text-zinc-400">
                     <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-1 transition hover:text-brand-600">
-                        <x-icon name="home" class="h-3.5 w-3.5" /> Home
+                        <x-icon name="home" class="h-3.5 w-3.5" /> {{ __('Home') }}
                     </a>
                     @if ($section)
                         <x-icon name="chevron-right" class="h-3 w-3" />
-                        <a href="{{ $section[1] }}" class="truncate transition hover:text-brand-600">{{ $section[0] }}</a>
+                        <a href="{{ $section[1] }}" class="truncate transition hover:text-brand-600">{{ __($section[0]) }}</a>
                     @endif
                 </nav>
                 <div class="flex min-w-0 items-baseline gap-2.5">
-                    <h1 class="shrink-0 truncate text-lg leading-tight font-bold tracking-tight text-zinc-900">{{ $title }}</h1>
+                    <h1 class="shrink-0 truncate text-lg leading-tight font-bold tracking-tight text-zinc-900">{{ __($title) }}</h1>
                     @if ($subtitle)
                         <span class="hidden h-1 w-1 shrink-0 translate-y-[-3px] rounded-full bg-zinc-300 lg:block"></span>
-                        <p class="hidden truncate text-sm text-zinc-500 lg:block">{{ $subtitle }}</p>
+                        <p class="hidden truncate text-sm text-zinc-500 lg:block">{{ __($subtitle) }}</p>
                     @endif
                 </div>
             </div>
@@ -142,15 +142,17 @@
             <form method="GET" action="{{ route('logbooks.index') }}" class="relative hidden w-72 shrink-0 md:block" role="search">
                 <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input type="search" name="q" value="{{ request()->routeIs('logbooks.index') ? request('q') : '' }}" data-global-search
-                       placeholder="Search entries… (Ctrl+K)" aria-label="Search logbook entries"
+                       placeholder="{{ __('Search entries… (Ctrl+K)') }}" aria-label="Search logbook entries"
                        class="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 pr-3 pl-10 text-sm text-zinc-900 transition placeholder:text-zinc-400 focus:border-brand-500 focus:bg-white focus:outline-none">
             </form>
 
             <span class="hidden shrink-0 items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-600 xl:inline-flex">
-                <x-icon name="calendar" class="h-3.5 w-3.5 text-slate-400" /> {{ now()->format('D, j M Y') }}
+                <x-icon name="calendar" class="h-3.5 w-3.5 text-slate-400" /> {{ now()->translatedFormat('D, j M Y') }}
             </span>
+            <x-locale-switch class="hidden sm:inline-flex" />
+
             {{-- Light / dark switch (resources/js/app.js) --}}
-            <button type="button" data-theme-toggle class="icon-btn shrink-0" aria-label="Switch to light or dark mode" title="Switch light / dark mode">
+            <button type="button" data-theme-toggle class="icon-btn shrink-0" aria-label="Switch to light or dark mode" title="{{ __('Switch light / dark mode') }}">
                 <x-icon name="sun" class="theme-icon-sun h-5 w-5" />
                 <x-icon name="moon" class="theme-icon-moon h-5 w-5" />
             </button>
@@ -169,11 +171,11 @@
                 </summary>
                 <div class="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] origin-top-right animate-scale-in overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_20px_40px_-12px_rgba(16,24,40,0.25)]">
                     <div class="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
-                        <p class="text-sm font-semibold">Notifications</p>
+                        <p class="text-sm font-semibold">{{ __('Notifications') }}</p>
                         @if ($unreadCount)
                             <form method="POST" action="{{ route('notifications.read-all') }}">
                                 @csrf
-                                <button type="submit" class="text-xs font-semibold text-brand-600 hover:text-brand-800">Mark all read</button>
+                                <button type="submit" class="text-xs font-semibold text-brand-600 hover:text-brand-800">{{ __('Mark all read') }}</button>
                             </form>
                         @endif
                     </div>
@@ -201,7 +203,7 @@
                                 </a>
                             </li>
                         @empty
-                            <li class="px-4 py-8 text-center text-sm text-zinc-500">No notifications yet.</li>
+                            <li class="px-4 py-8 text-center text-sm text-zinc-500">{{ __('No notifications yet.') }}</li>
                         @endforelse
                     </ul>
                 </div>
