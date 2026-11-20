@@ -1,7 +1,7 @@
 @php($user = auth()->user())
 
-<x-layouts.app :title="$user->isSupervisor() ? 'Student Logbooks' : 'My Logbook'"
-               :subtitle="$user->isSupervisor() ? 'Read, comment on and sign your students\' weekly entries' : 'All your weekly entries in one place'">
+<x-layouts.app :title="$user->isStaff() ? 'Student Logbooks' : 'My Logbook'"
+               :subtitle="match (true) { $user->isCoordinator() => 'Every logbook entry in the faculty', $user->isSupervisor() => 'Read, comment on and sign your students\' weekly entries', default => 'All your weekly entries in one place' }">
     <x-slot:actions>
         @if ($user->isStudent())
             <a href="{{ route('logbooks.report') }}" class="btn btn-secondary"><x-icon name="printer" class="h-4 w-4" /> <span class="hidden sm:inline">Full logbook</span></a>
@@ -30,7 +30,15 @@
                 <x-icon name="search" class="input-icon pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                 <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Search entries…" class="input w-56 py-2.5 pl-9">
             </label>
-            @if ($user->isSupervisor() && $students->isNotEmpty())
+            @if ($user->isCoordinator() && $supervisors->isNotEmpty())
+                <select name="supervisor" onchange="this.form.student && (this.form.student.value = ''); this.form.submit()" data-select class="input w-auto min-w-56">
+                    <option value="">All supervisors</option>
+                    @foreach ($supervisors as $s)
+                        <option value="{{ $s->id }}" @selected($filters['supervisor'] == $s->id)>{{ $s->name }}</option>
+                    @endforeach
+                </select>
+            @endif
+            @if ($user->isStaff() && $students->isNotEmpty())
                 <select name="student" onchange="this.form.submit()" data-select class="input w-auto min-w-64">
                     <option value="">All students</option>
                     @foreach ($students as $s)
@@ -48,7 +56,7 @@
                 <thead class="table-head">
                     <tr>
                         <th class="px-6 py-3.5">Week</th>
-                        @if ($user->isSupervisor()) <th class="px-6 py-3.5">Student</th> @endif
+                        @if ($user->isStaff()) <th class="px-6 py-3.5">Student</th> @endif
                         <th class="px-6 py-3.5">Date</th>
                         <th class="px-6 py-3.5">Progress / Matters discussed</th>
                         <th class="px-6 py-3.5">Status</th>
@@ -65,7 +73,7 @@
                                     <span class="text-sm font-bold">{{ $logbook->week_no }}</span>
                                 </span>
                             </td>
-                            @if ($user->isSupervisor())
+                            @if ($user->isStaff())
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-3">
                                         <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-xs font-bold text-white">{{ $logbook->student->initials() }}</span>

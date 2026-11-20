@@ -19,6 +19,11 @@ class User extends Authenticatable
 
     public const ROLE_SUPERVISOR = 'supervisor';
 
+    /** FYP coordinator: manages accounts, semesters and sees every logbook in the faculty. */
+    public const ROLE_COORDINATOR = 'coordinator';
+
+    public const ROLES = [self::ROLE_STUDENT, self::ROLE_SUPERVISOR, self::ROLE_COORDINATOR];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -64,6 +69,17 @@ class User extends Authenticatable
     public function isSupervisor(): bool
     {
         return $this->role === self::ROLE_SUPERVISOR;
+    }
+
+    public function isCoordinator(): bool
+    {
+        return $this->role === self::ROLE_COORDINATOR;
+    }
+
+    /** Supervisors and coordinators: they read and review other people's logbooks. */
+    public function isStaff(): bool
+    {
+        return $this->isSupervisor() || $this->isCoordinator();
     }
 
     /** The supervisor a student is assigned to. */

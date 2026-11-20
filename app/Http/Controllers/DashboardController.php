@@ -16,9 +16,13 @@ class DashboardController extends Controller
         $weeks = range(1, Logbook::MAX_WEEKS);
 
         // Every query below is scoped to the student's own entries, or the supervisor's students' entries.
+        // The coordinator sees the whole faculty.
+        $studentQuery = fn () => User::query()->where('role', User::ROLE_STUDENT)
+            ->when($user->isSupervisor(), fn ($q) => $q->where('supervisor_id', $user->id));
+
         $scope = fn (): Builder => Logbook::query()->when(
-            $user->isSupervisor(),
-            fn ($q) => $q->whereIn('student_id', User::query()->select('id')->where('supervisor_id', $user->id)->where('role', User::ROLE_STUDENT)),
+            $user->isStaff(),
+            fn ($q) => $q->whereIn('student_id', $studentQuery()->select('id')),
             fn ($q) => $q->where('student_id', $user->id),
         );
 
@@ -41,7 +45,7 @@ class DashboardController extends Controller
             Logbook::STATUS_REVISION => (int) $matrix->where('status', Logbook::STATUS_REVISION)->sum('total'),
         ];
         $total = array_sum($byStatus);
-        $students = $user->isSupervisor() ? $user->students()->count() : null;
+        $students = $user->isStaff() ? $studentQuery()->count() : null;
 
         // Average hours from submission to approval, over the latest 200 approvals.
         $reviewHours = $scope()
@@ -69,7 +73,7 @@ class DashboardController extends Controller
                 'approval_rate' => $total ? round($byStatus[Logbook::STATUS_APPROVED] / $total * 100) : 0,
                 'review_hours' => $reviewHours,
                 // Entries the supervisor could expect so far (each student x weeks).
-                'expected' => $user->isSupervisor() ? $students * Logbook::MAX_WEEKS : Logbook::MAX_WEEKS,
+                'expected' => $user->isStaff() ? $students * Logbook::MAX_WEEKS : Logbook::MAX_WEEKS,
             ],
             'series' => [
                 'submitted' => $perWeek(),
@@ -82,8 +86,8 @@ class DashboardController extends Controller
             // Student: entries keyed by week number for the timeline.
             'timeline' => $user->isStudent() ? $user->logbooks()->get(['id', 'week_no', 'status'])->keyBy('week_no') : collect(),
             // Supervisor: students with the most approved weeks.
-            'topStudents' => $user->isSupervisor()
-                ? $user->students()
+            'topStudents' => $user->isStaff()
+                ? $studentQuery()
                     ->withCount([
                         'logbooks',
                         'logbooks as reviewed_count' => fn ($q) => $q->where('status', Logbook::STATUS_APPROVED),
@@ -94,7 +98,7 @@ class DashboardController extends Controller
                     ->get()
                 : collect(),
             // Supervisor: oldest entries still waiting. Student: latest supervisor comments.
-            'queue' => $user->isSupervisor()
+            'queue' => $user->isStaff()
                 ? $scope()->with('student')->where('status', Logbook::STATUS_PENDING)->oldest('submitted_at')->take(5)->get()
                 : $scope()->whereNotNull('supervisor_comment')->latest('updated_at')->take(5)->get(),
         ]);

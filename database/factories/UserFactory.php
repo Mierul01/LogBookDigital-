@@ -43,6 +43,14 @@ class UserFactory extends Factory
         ]);
     }
 
+    public function coordinator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'username' => fake()->unique()->userName(),
+            'role' => User::ROLE_COORDINATOR,
+        ]);
+    }
+
     public function supervisedBy(User $supervisor): static
     {
         return $this->state(fn (array $attributes) => [

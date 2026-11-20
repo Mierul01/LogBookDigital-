@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LogbookRequest;
 use App\Http\Requests\ReviewLogbookRequest;
 use App\Models\Logbook;
+use App\Models\User;
 use App\Notifications\LogbookActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,13 +26,20 @@ class LogbookController extends Controller
             $status = Logbook::STATUS_APPROVED;
         }
 
-        $query = $user->isSupervisor() ? $user->supervisedLogbooks() : $user->logbooks();
+        $supervisorId = $user->isCoordinator() ? $request->query('supervisor') : null;
+
+        $query = match (true) {
+            $user->isCoordinator() => Logbook::query()->select('logbooks.*'),
+            $user->isSupervisor() => $user->supervisedLogbooks(),
+            default => $user->logbooks(),
+        };
 
         $logbooks = $query
             ->with('student')
             ->when(in_array($status, [Logbook::STATUS_PENDING, Logbook::STATUS_REVISION, Logbook::STATUS_APPROVED], true),
                 fn ($q) => $q->where('logbooks.status', $status))
-            ->when($user->isSupervisor() && $studentId, fn ($q) => $q->where('logbooks.student_id', $studentId))
+            ->when($user->isStaff() && $studentId, fn ($q) => $q->where('logbooks.student_id', $studentId))
+            ->when($supervisorId, fn ($q) => $q->whereIn('logbooks.student_id', User::query()->select('id')->where('supervisor_id', $supervisorId)))
             ->when($search, fn ($q) => $q->where(fn ($q) => $q
                 ->where('logbooks.progress', 'like', "%{$search}%")
                 ->orWhere('logbooks.current_status', 'like', "%{$search}%")
@@ -43,8 +51,15 @@ class LogbookController extends Controller
 
         return view('logbooks.index', [
             'logbooks' => $logbooks,
-            'students' => $user->isSupervisor() ? $user->students()->orderBy('name')->get(['id', 'name', 'username']) : collect(),
-            'filters' => ['status' => $status, 'student' => $studentId, 'q' => $search],
+            'students' => match (true) {
+                $user->isCoordinator() => User::query()->where('role', User::ROLE_STUDENT)
+                    ->when($supervisorId, fn ($q) => $q->where('supervisor_id', $supervisorId))
+                    ->orderBy('name')->get(['id', 'name', 'username']),
+                $user->isSupervisor() => $user->students()->orderBy('name')->get(['id', 'name', 'username']),
+                default => collect(),
+            },
+            'supervisors' => $user->isCoordinator() ? User::query()->where('role', User::ROLE_SUPERVISOR)->orderBy('name')->get(['id', 'name']) : collect(),
+            'filters' => ['status' => $status, 'student' => $studentId, 'supervisor' => $supervisorId, 'q' => $search],
         ]);
     }
 
@@ -180,9 +195,11 @@ class LogbookController extends Controller
     {
         $user = $request->user();
 
-        $student = $user->isSupervisor()
-            ? $user->students()->findOrFail($request->query('student'))
-            : $user;
+        $student = match (true) {
+            $user->isCoordinator() => User::query()->where('role', User::ROLE_STUDENT)->findOrFail($request->query('student')),
+            $user->isSupervisor() => $user->students()->findOrFail($request->query('student')),
+            default => $user,
+        };
 
         return view('logbooks.report', [
             'student' => $student->load('supervisor'),

@@ -48,9 +48,13 @@
                 <x-icon name="home" /> Dashboard
             </a>
             <a href="{{ route('logbooks.index') }}" @class(['nav-link', 'active' => request()->routeIs('logbooks.*') && ! request()->routeIs('logbooks.create')])>
-                <x-icon name="book" /> {{ $user->isSupervisor() ? 'Student Logbooks' : 'My Logbook' }}
+                <x-icon name="book" /> {{ $user->isStaff() ? 'Student Logbooks' : 'My Logbook' }}
             </a>
-            @if ($user->isSupervisor())
+            @if ($user->isCoordinator())
+                <a href="{{ route('admin.users.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.users.*')])>
+                    <x-icon name="users" /> Users
+                </a>
+            @elseif ($user->isSupervisor())
                 <a href="{{ route('students.index') }}" @class(['nav-link', 'active' => request()->routeIs('students.*')])>
                     <x-icon name="users" /> Students
                 </a>
@@ -93,7 +97,8 @@
         @php
             // Breadcrumb section for the current page.
             $section = match (true) {
-                request()->routeIs('logbooks.*') => [$user->isSupervisor() ? 'Student Logbooks' : 'My Logbook', route('logbooks.index')],
+                request()->routeIs('logbooks.*') => [$user->isStaff() ? 'Student Logbooks' : 'My Logbook', route('logbooks.index')],
+                request()->routeIs('admin.*') => ['Administration', route('admin.users.index')],
                 request()->routeIs('students.*') => ['Students', route('students.index')],
                 request()->routeIs('profile') => ['Account', route('profile')],
                 default => null,

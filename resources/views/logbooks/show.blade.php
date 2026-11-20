@@ -186,7 +186,7 @@
                             <x-icon name="clock" class="h-6 w-6 text-amber-500" />
                         </span>
                         <p class="mt-3 font-semibold">Waiting for review</p>
-                        <p class="mt-1 text-sm text-zinc-500">Your supervisor hasn't signed this yet. You can still edit it until then.</p>
+                        <p class="mt-1 text-sm text-zinc-500">{{ auth()->user()->isStudent() ? "Your supervisor hasn't signed this yet. You can still edit it until then." : "The supervisor hasn't reviewed this entry yet." }}</p>
                     </div>
                 @endcan
             </section>

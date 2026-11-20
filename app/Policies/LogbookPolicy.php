@@ -13,10 +13,10 @@ class LogbookPolicy
         return true;
     }
 
-    /** Owner student, or the student's supervisor. */
+    /** Owner student, the student's supervisor, or the FYP coordinator. */
     public function view(User $user, Logbook $logbook): bool
     {
-        return $this->owns($user, $logbook) || $this->supervises($user, $logbook);
+        return $this->owns($user, $logbook) || $this->supervises($user, $logbook) || $user->isCoordinator();
     }
 
     /** Only students write logbook entries. */

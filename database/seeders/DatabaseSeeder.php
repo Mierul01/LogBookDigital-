@@ -14,11 +14,18 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed demo accounts for local development.
      *
+     * Coordinator: coordinator / password
      * Supervisor: dr.aisyah / password
      * Students:   A192910, A192911 / password
      */
     public function run(): void
     {
+        User::factory()->coordinator()->create([
+            'username' => 'coordinator',
+            'name' => 'Prof. Madya Dr. Hafiz Osman',
+            'email' => 'fyp.coordinator@ukm.edu.my',
+        ]);
+
         $supervisor = User::factory()->supervisor()->create([
             'username' => 'dr.aisyah',
             'name' => 'Dr. Aisyah Rahman',

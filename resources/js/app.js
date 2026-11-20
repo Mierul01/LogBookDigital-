@@ -225,3 +225,11 @@ if (topbar) {
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 }
+
+// Admin user form: the supervisor picker only applies to students.
+document.querySelectorAll('[data-role-form]').forEach((form) => {
+    const field = form.querySelector('[data-student-only]');
+    form.querySelectorAll('[data-role-option]').forEach((radio) => {
+        radio.addEventListener('change', () => field?.classList.toggle('hidden', radio.value !== 'student'));
+    });
+});

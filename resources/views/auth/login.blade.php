@@ -22,7 +22,6 @@
     </form>
 
     <p class="mt-8 text-center text-sm text-zinc-500">
-        Supervisor without an account?
-        <a href="{{ route('register') }}" class="font-semibold text-brand-600 hover:text-brand-700">Register here</a>
+        No account yet? Ask your FYP coordinator to create one for you.
     </p>
 </x-layouts.guest>

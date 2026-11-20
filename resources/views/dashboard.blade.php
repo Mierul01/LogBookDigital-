@@ -1,7 +1,9 @@
 @php
     use Illuminate\Support\Str;
 
-    $isSupervisor = $user->isSupervisor();
+    // Supervisors and the coordinator share the staff dashboard; the coordinator's covers every student.
+    $isSupervisor = $user->isStaff();
+    $studentsUrl = $user->isCoordinator() ? route('admin.users.index', ['role' => 'student']) : route('students.index');
     $hour = now()->hour;
     $greeting = $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening');
     $firstName = Str::of($user->name)->replaceMatches('/^(Dr\.?|Prof\.?|Encik|Puan)\s+/i', '')->before(' ');
@@ -19,7 +21,7 @@
 
     $tiles = $isSupervisor
         ? [
-            ['Students', $stats['students'], 'users', 'from-sky-400 to-sky-600', '#38bdf8', $cumulative($series['submitted']), 'Under your supervision', route('students.index')],
+            ['Students', $stats['students'], 'users', 'from-sky-400 to-sky-600', '#38bdf8', $cumulative($series['submitted']), ($user->isCoordinator() ? 'In the whole faculty' : 'Under your supervision'), $studentsUrl],
             ['Total entries', $stats['total'], 'document', 'from-brand-400 to-brand-600', '#5583c9', $cumulative($series['submitted']), "+{$stats['this_week']} in the last 7 days", route('logbooks.index')],
             ['Approved', $stats['reviewed'], 'shield', 'from-emerald-400 to-emerald-600', '#34d399', $cumulative($series['approved']), "{$stats['approval_rate']}% of all entries", route('logbooks.index', ['status' => 'approved'])],
             ['Awaiting review', $stats['pending'], 'clock', 'from-amber-300 to-amber-500', '#f5b41a', $series['pending'], $stats['pending'] ? 'Needs your signature' : 'All caught up', route('logbooks.index', ['status' => 'pending'])],
@@ -79,7 +81,7 @@
                                 <x-icon name="calendar" class="h-3.5 w-3.5" /> {{ now()->format('j M Y') }}
                             </span>
                             <span class="inline-flex items-center gap-1.5 rounded-lg bg-ukm-gold/20 px-2.5 py-1 text-xs font-semibold text-ukm-gold ring-1 ring-ukm-gold/30">
-                                <x-icon name="sparkles" class="h-3.5 w-3.5" /> {{ $isSupervisor ? 'Supervisor workspace' : 'Final Year Project' }}
+                                <x-icon name="sparkles" class="h-3.5 w-3.5" /> {{ $isSupervisor ? ($user->isCoordinator() ? 'Coordinator workspace' : 'Supervisor workspace') : 'Final Year Project' }}
                             </span>
                             @if ($isSupervisor && $stats['pending'])
                                 <a href="{{ route('logbooks.index', ['status' => 'pending']) }}" class="keep-light inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-brand-800 transition hover:bg-brand-50">Review now <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
@@ -164,7 +166,7 @@
                 <section class="dash-card" data-reveal>
                     <div class="dash-head">
                         <h3 class="dash-title"><span class="dash-icon bg-ukm-gold/15 text-ukm-gold"><x-icon name="academic-cap" class="h-4 w-4" /></span> Top students</h3>
-                        <a href="{{ route('students.index') }}" class="dash-link">View all <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
+                        <a href="{{ $studentsUrl }}" class="dash-link">View all <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
                     </div>
                     <ul class="divide-y divide-zinc-100 px-4 pb-2">
                         @forelse ($topStudents as $i => $student)
@@ -185,7 +187,7 @@
                             </li>
                         @empty
                             <li class="py-8 text-center text-sm text-zinc-500">
-                                No students yet. <a href="{{ route('students.create') }}" class="font-semibold text-brand-600">Register one</a>
+                                No students yet. <a href="{{ ($user->isCoordinator() ? route('admin.users.create', ['role' => 'student']) : route('students.create')) }}" class="font-semibold text-brand-600">Register one</a>
                             </li>
                         @endforelse
                     </ul>
