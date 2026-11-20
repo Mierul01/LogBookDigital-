@@ -13,10 +13,13 @@
             <x-icon-input icon="lock" name="password" type="password" required autocomplete="current-password" placeholder="Your password" />
         </x-field>
 
-        <label class="flex items-center gap-2 text-sm text-zinc-600">
-            <input type="checkbox" name="remember" class="h-4 w-4 rounded border-zinc-300 text-brand-600 focus:ring-brand-500">
-            Remember me
-        </label>
+        <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 text-sm text-zinc-600">
+                <input type="checkbox" name="remember" class="h-4 w-4 rounded border-zinc-300 text-brand-600 focus:ring-brand-500">
+                Remember me
+            </label>
+            <a href="{{ route('password.request') }}" class="text-sm font-semibold text-brand-600 hover:text-brand-700">Forgot password?</a>
+        </div>
 
         <button type="submit" class="btn btn-primary w-full">Log in</button>
     </form>
