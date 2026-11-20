@@ -33,6 +33,7 @@ class User extends Authenticatable
         'username',
         'name',
         'email',
+        'email_notifications',
         'role',
         'supervisor_id',
         'password',
@@ -58,7 +59,14 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'email_notifications' => 'boolean',
         ];
+    }
+
+    /** Email notices go to users with an address who haven't turned them off. */
+    public function wantsEmail(): bool
+    {
+        return filled($this->email) && $this->email_notifications !== false;
     }
 
     public function isStudent(): bool

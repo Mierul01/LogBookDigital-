@@ -160,6 +160,11 @@
                     <x-field name="email" label="Email address">
                         <x-icon-input icon="envelope" name="email" type="email" value="{{ old('email', $user->email) }}" autocomplete="email" placeholder="you@siswa.ukm.edu.my" />
                     </x-field>
+                    <label class="flex items-start gap-2.5 text-sm text-zinc-700 sm:col-span-2">
+                        <input type="hidden" name="email_notifications" value="0">
+                        <input type="checkbox" name="email_notifications" value="1" @checked(old('email_notifications', $user->email_notifications ?? true)) class="mt-0.5 h-4 w-4 rounded border-zinc-300 text-brand-600 focus:ring-brand-500">
+                        <span>Email me about my logbook too <span class="block text-xs text-zinc-500">{{ $user->isStudent() ? 'Approvals, entries sent back, and a reminder on the day a week is due.' : 'New and resent entries, and a Monday summary of what is waiting for you.' }}</span></span>
+                    </label>
                 </div>
                 <div class="flex items-center justify-end gap-3 rounded-b-2xl border-t border-zinc-100 bg-zinc-50/60 px-6 py-4">
                     <button type="reset" class="btn btn-secondary">Reset</button>

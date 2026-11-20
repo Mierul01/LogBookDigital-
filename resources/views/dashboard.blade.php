@@ -282,6 +282,8 @@
                                 'approved' => ['shield', 'bg-emerald-500'],
                                 'revision' => ['pencil', 'bg-orange-500'],
                                 'resubmitted' => ['arrow-left', 'bg-sky-500'],
+                                'reminder' => ['clock', 'bg-amber-500'],
+                                'digest' => ['list', 'bg-sky-500'],
                                 default => ['document', 'bg-brand-500'],
                             };
                         @endphp

@@ -46,7 +46,7 @@ class ProfileController extends Controller
             'email' => ['nullable', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
         ]);
 
-        $user->update($data);
+        $user->update([...$data, 'email_notifications' => $request->boolean('email_notifications')]);
 
         return back()->with('success_title', 'Profile updated')->with('success', 'Your details have been saved.');
     }

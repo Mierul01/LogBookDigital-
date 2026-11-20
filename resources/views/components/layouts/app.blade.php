@@ -183,6 +183,8 @@
                                 [$noteIcon, $noteTone] = match ($note->data['kind'] ?? '') {
                                     'approved' => ['shield', 'bg-emerald-50 text-emerald-600'],
                                     'revision' => ['pencil', 'bg-orange-50 text-orange-600'],
+                                    'reminder' => ['clock', 'bg-amber-50 text-amber-600'],
+                                    'digest' => ['list', 'bg-sky-50 text-sky-600'],
                                     default => ['document', 'bg-brand-50 text-brand-600'],
                                 };
                             @endphp
