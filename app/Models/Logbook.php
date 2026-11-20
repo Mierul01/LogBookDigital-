@@ -22,11 +22,22 @@ class Logbook extends Model
     /** The supervisor approved and signed it. */
     public const STATUS_APPROVED = 'approved';
 
+    /** How the student met the supervisor that week. */
+    public const MEETING_MODES = [
+        'face_to_face' => 'Face to face',
+        'online' => 'Online',
+        'none' => 'No meeting this week',
+    ];
+
     protected $fillable = [
         'student_id',
         'semester_id',
         'week_no',
         'entry_date',
+        'meeting_mode',
+        'meeting_time',
+        'meeting_minutes',
+        'meeting_place',
         'progress',
         'current_status',
         'problem',
@@ -48,6 +59,7 @@ class Logbook extends Model
         return [
             'week_no' => 'integer',
             'entry_date' => 'date',
+            'meeting_minutes' => 'integer',
             'submitted_at' => 'datetime',
             'reviewed_at' => 'datetime',
         ];
@@ -73,6 +85,26 @@ class Logbook extends Model
     public function isReviewed(): bool
     {
         return $this->status === self::STATUS_APPROVED;
+    }
+
+    public function hadMeeting(): bool
+    {
+        return $this->meeting_mode !== 'none';
+    }
+
+    /** e.g. "Face to face · 2:30 pm · 45 min · Bilik Perbincangan 2" */
+    public function meetingSummary(): string
+    {
+        if (! $this->hadMeeting()) {
+            return self::MEETING_MODES['none'];
+        }
+
+        return collect([
+            self::MEETING_MODES[$this->meeting_mode] ?? $this->meeting_mode,
+            $this->meeting_time ? \Illuminate\Support\Carbon::parse($this->meeting_time)->format('g:i a') : null,
+            $this->meeting_minutes ? $this->meeting_minutes.' min' : null,
+            $this->meeting_place,
+        ])->filter()->implode(' · ');
     }
 
     public function isPending(): bool

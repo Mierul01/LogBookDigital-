@@ -233,3 +233,11 @@ document.querySelectorAll('[data-role-form]').forEach((form) => {
         radio.addEventListener('change', () => field?.classList.toggle('hidden', radio.value !== 'student'));
     });
 });
+
+// Logbook form: time, length and place only matter when there was a meeting.
+document.querySelectorAll('[data-meeting]').forEach((block) => {
+    const details = block.querySelector('[data-meeting-details]');
+    block.querySelectorAll('[data-meeting-mode]').forEach((radio) => {
+        radio.addEventListener('change', () => details.classList.toggle('hidden', radio.value === 'none'));
+    });
+});

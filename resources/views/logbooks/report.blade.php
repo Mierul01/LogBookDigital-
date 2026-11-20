@@ -1,6 +1,7 @@
 @php
     $weeks = range(1, App\Models\Logbook::MAX_WEEKS);
     $approved = $logbooks->filter->isReviewed()->count();
+    $meetings = $logbooks->filter->hadMeeting()->count();
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -42,6 +43,7 @@
             <div class="shrink-0 rounded-xl bg-brand-50 px-4 py-3 text-right">
                 <p class="text-2xl font-bold text-brand-700">{{ $approved }}<span class="text-base text-brand-400">/{{ count($weeks) }}</span></p>
                 <p class="text-xs text-brand-700/80">weeks approved</p>
+                <p class="mt-1 text-xs text-brand-700/80">{{ $meetings }} {{ Str::plural('meeting', $meetings) }} held</p>
             </div>
         </header>
 
@@ -71,6 +73,9 @@
                             <x-status-badge :logbook="$entry" />
                         @endif
                     </div>
+                    @if ($entry)
+                        <p class="mt-1.5 text-xs text-zinc-500">Perjumpaan: {{ $entry->meetingSummary() }}</p>
+                    @endif
 
                     @if ($entry)
                         <dl class="mt-3 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">

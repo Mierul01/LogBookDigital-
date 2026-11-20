@@ -33,6 +33,11 @@ class LogbookRequest extends FormRequest
                     ->ignore($logbook?->id),
             ],
             'entry_date' => ['required', 'date'],
+            'meeting_mode' => ['required', Rule::in(array_keys(Logbook::MEETING_MODES))],
+            // Time and length are needed when there was a meeting.
+            'meeting_time' => ['exclude_if:meeting_mode,none', 'required', 'date_format:H:i'],
+            'meeting_minutes' => ['exclude_if:meeting_mode,none', 'required', 'integer', 'between:5,480'],
+            'meeting_place' => ['exclude_if:meeting_mode,none', 'nullable', 'string', 'max:255'],
             'progress' => ['required', 'string', 'max:5000'],
             'current_status' => ['required', 'string', 'max:5000'],
             'problem' => ['required', 'string', 'max:5000'],
@@ -56,6 +61,10 @@ class LogbookRequest extends FormRequest
         return [
             'week_no' => 'week number',
             'entry_date' => 'date',
+            'meeting_mode' => 'meeting type',
+            'meeting_time' => 'meeting time',
+            'meeting_minutes' => 'meeting length',
+            'meeting_place' => 'place or link',
             'progress' => 'progress / matters discussed',
             'next_week_task' => 'next week\'s task',
         ];

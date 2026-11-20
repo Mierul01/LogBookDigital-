@@ -1,4 +1,6 @@
-@php($editing = $logbook->exists)
+@php
+    $editing = $logbook->exists;
+@endphp
 
 <x-layouts.app :title="$editing ? 'Edit Week '.$logbook->week_no : 'New Logbook Entry'"
                subtitle="Log Book Mingguan · record what you did and discussed this week">
@@ -45,6 +47,34 @@
                         <x-icon-input icon="calendar" name="entry_date" required data-datepicker placeholder="Pick a date"
                                       value="{{ old('entry_date', $logbook->entry_date?->format('Y-m-d')) }}" />
                     </x-field>
+                </div>
+
+                {{-- Meeting with the supervisor --}}
+                @php
+                    $mode = old('meeting_mode', $logbook->meeting_mode ?? 'face_to_face');
+                @endphp
+                <div class="border-t border-zinc-100 px-6 pt-4 pb-6" data-meeting>
+                    <p class="label">Perjumpaan dengan penyelia (Meeting with supervisor)</p>
+                    <div class="grid gap-2 sm:grid-cols-3">
+                        @foreach (App\Models\Logbook::MEETING_MODES as $value => $label)
+                            <label class="flex cursor-pointer items-center gap-2.5 rounded-xl border border-zinc-200 px-3 py-2.5 text-sm transition hover:border-brand-400 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+                                <input type="radio" name="meeting_mode" value="{{ $value }}" @checked($mode === $value) class="text-brand-600 focus:ring-brand-500" data-meeting-mode>
+                                {{ $label }}
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('meeting_mode') <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p> @enderror
+                    <div @class(['mt-4 grid gap-4 sm:grid-cols-3', 'hidden' => $mode === 'none']) data-meeting-details>
+                        <x-field name="meeting_time" label="Masa (Time)">
+                            <x-icon-input icon="clock" name="meeting_time" type="time" value="{{ old('meeting_time', $logbook->meeting_time ? substr($logbook->meeting_time, 0, 5) : '') }}" />
+                        </x-field>
+                        <x-field name="meeting_minutes" label="Tempoh (Minutes)">
+                            <x-icon-input icon="clock" name="meeting_minutes" type="number" min="5" max="480" step="5" value="{{ old('meeting_minutes', $logbook->meeting_minutes) }}" placeholder="30" />
+                        </x-field>
+                        <x-field name="meeting_place" label="Tempat / Pautan (Place or link)">
+                            <x-icon-input icon="building" name="meeting_place" value="{{ old('meeting_place', $logbook->meeting_place) }}" placeholder="Room or Teams link" />
+                        </x-field>
+                    </div>
                 </div>
             </section>
 

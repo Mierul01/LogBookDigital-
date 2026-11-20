@@ -36,6 +36,7 @@
                         <div>
                             <h2 class="text-lg font-bold">Log Book Mingguan</h2>
                             <p class="mt-0.5 flex items-center gap-1.5 text-sm text-zinc-500"><x-icon name="calendar" class="h-4 w-4" /> {{ $logbook->entry_date->format('l, j F Y') }}</p>
+                            <p class="mt-0.5 flex items-center gap-1.5 text-sm text-zinc-500"><x-icon name="users" class="h-4 w-4" /> {{ $logbook->meetingSummary() }}</p>
                         </div>
                     </div>
                     <x-status-badge :logbook="$logbook" />

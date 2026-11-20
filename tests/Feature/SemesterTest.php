@@ -19,6 +19,7 @@ class SemesterTest extends TestCase
         return [
             'week_no' => $week, 'entry_date' => now()->toDateString(), 'progress' => 'Did things.', 'current_status' => 'OK',
             'problem' => 'None', 'next_week_task' => 'More things.', 'student_signature' => self::SIGNATURE,
+            'meeting_mode' => 'online', 'meeting_time' => '14:30', 'meeting_minutes' => 45,
         ];
     }
 
