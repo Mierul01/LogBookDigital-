@@ -47,23 +47,34 @@ export const Toast = Swal.mixin({
  */
 document.addEventListener('submit', async (event) => {
     const form = event.target;
-    if (!form.dataset.confirm || form.dataset.confirmed) return;
+    // A submit button can carry its own data-confirm-* (e.g. "Approve" vs "Send back").
+    const button = event.submitter;
+    const source = button?.dataset.confirm ? button : form;
+    if (!source.dataset.confirm || form.dataset.confirmed) return;
 
     event.preventDefault();
 
-    const danger = form.dataset.confirmTone === 'danger';
+    const danger = source.dataset.confirmTone === 'danger';
     const { isConfirmed } = await Alert.fire({
-        icon: form.dataset.confirmIcon || (danger ? 'warning' : 'question'),
-        title: form.dataset.confirmTitle || 'Are you sure?',
-        text: form.dataset.confirm,
+        icon: source.dataset.confirmIcon || (danger ? 'warning' : 'question'),
+        title: source.dataset.confirmTitle || 'Are you sure?',
+        text: source.dataset.confirm,
         showCancelButton: true,
-        confirmButtonText: form.dataset.confirmButton || 'Yes, continue',
+        confirmButtonText: source.dataset.confirmButton || 'Yes, continue',
         cancelButtonText: 'Cancel',
         focusCancel: danger,
         customClass: classes(danger ? { confirmButton: 'btn btn-danger-solid' } : {}),
     });
 
     if (isConfirmed) {
+        // form.submit() leaves out the clicked button, so send its name/value ourselves.
+        if (button?.name) {
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = button.name;
+            hidden.value = button.value;
+            form.appendChild(hidden);
+        }
         form.dataset.confirmed = '1';
         form.querySelectorAll('button[type="submit"]').forEach((b) => { b.disabled = true; });
         form.submit();

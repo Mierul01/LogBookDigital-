@@ -6,12 +6,23 @@
         <a href="{{ route('logbooks.index') }}" class="btn btn-secondary"><x-icon name="list" class="h-4 w-4" /> <span class="hidden sm:inline">View all entries</span></a>
     </x-slot:actions>
 
-    <form method="POST" action="{{ $editing ? route('logbooks.update', $logbook) : route('logbooks.store') }}" class="grid gap-8 lg:grid-cols-3"
-          @unless ($editing) data-confirm="Your supervisor will be able to review it. You can still edit it until it is signed." data-confirm-title="Submit this entry?" data-confirm-button="Yes, submit" @endunless>
+    <form method="POST" action="{{ $editing ? route('logbooks.update', $logbook) : route('logbooks.store') }}" class="grid gap-5 lg:grid-cols-3"
+          @unless ($editing) data-confirm="Your supervisor will be able to review it. You can still edit it until it is signed." data-confirm-title="Submit this entry?" data-confirm-button="Yes, submit" @endunless
+          @if ($editing && $logbook->needsRevision()) data-confirm="Your supervisor will review week {{ $logbook->week_no }} again." data-confirm-title="Send the fixed entry?" data-confirm-button="Yes, send" @endif>
         @csrf
         @if ($editing) @method('PUT') @endif
 
-        <div class="space-y-8 lg:col-span-2" data-reveal-group>
+        <div class="space-y-5 lg:col-span-2" data-reveal-group>
+            @if ($editing && $logbook->needsRevision())
+                <div class="flex gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-5 py-4 text-sm text-orange-900">
+                    <x-icon name="warning" class="h-5 w-5 shrink-0 text-orange-500" />
+                    <div class="min-w-0">
+                        <p class="font-semibold">What your supervisor asked you to fix</p>
+                        <p class="mt-1 whitespace-pre-line text-orange-800">{{ $logbook->supervisor_comment }}</p>
+                    </div>
+                </div>
+            @endif
+
             {{-- Week details --}}
             <section class="card" data-reveal>
                 <div class="card-header">
@@ -64,15 +75,26 @@
                                   @class(['input', 'input-error' => $errors->has('next_week_task')])>{{ old('next_week_task', $logbook->next_week_task) }}</textarea>
                     </x-field>
                 </div>
+                <div class="border-t border-zinc-100 px-6 py-5">
+                    @if ($editing && $logbook->student_signature)
+                        <div class="mb-4 flex items-center gap-4 rounded-xl bg-zinc-50 px-4 py-3">
+                            <img src="{{ $logbook->student_signature }}" alt="Your current signature" class="h-10 w-32 object-contain object-left">
+                            <p class="text-xs text-zinc-500">Your current signature is kept. Sign below only if you want to replace it.</p>
+                        </div>
+                    @endif
+                    <x-signature-pad name="student_signature" label="Tandatangan Pelajar (Your signature)" :optional="$editing"
+                                     :hint="$editing ? 'Optional when editing.' : 'Sign to confirm this entry is true. Use your mouse or finger.'"
+                                     empty-message="Please sign in the signature box before submitting your entry." class="max-w-md" />
+                </div>
                 <div class="flex justify-end gap-3 rounded-b-2xl border-t border-zinc-100 bg-zinc-50/60 px-6 py-4">
                     <a href="{{ route('logbooks.index') }}" class="btn btn-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary"><x-icon name="check" class="h-4 w-4" /> {{ $editing ? 'Save changes' : 'Submit entry' }}</button>
+                    <button type="submit" class="btn btn-primary"><x-icon name="check" class="h-4 w-4" /> {{ $editing ? ($logbook->needsRevision() ? 'Save & resend' : 'Save changes') : 'Sign & submit' }}</button>
                 </div>
             </section>
         </div>
 
         {{-- Side panel --}}
-        <aside class="space-y-8" data-reveal-group>
+        <aside class="space-y-5" data-reveal-group>
             <section class="card p-6" data-reveal>
                 <p class="text-xs font-semibold tracking-[0.08em] text-zinc-500 uppercase">Submitting as</p>
                 <div class="mt-4 flex items-center gap-3">
@@ -107,7 +129,7 @@
 
             <section class="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800" data-reveal>
                 <x-icon name="warning" class="h-5 w-5 shrink-0 text-amber-500" />
-                <p>Once your supervisor signs this entry it's locked and can no longer be edited.</p>
+                <p>Once your supervisor approves and signs this entry it's locked. If they send it back, you can fix it and send it again.</p>
             </section>
         </aside>
     </form>

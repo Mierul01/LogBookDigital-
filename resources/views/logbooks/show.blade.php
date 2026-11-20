@@ -1,19 +1,35 @@
+@php($supervisorName = $logbook->student->supervisor?->name ?? 'Supervisor')
+
 <x-layouts.app :title="'Week '.$logbook->week_no" :subtitle="$logbook->student->name.' · '.$logbook->entry_date->format('l, j F Y')">
     <x-slot:actions>
-        <a href="{{ route('logbooks.index') }}" class="btn btn-secondary"><x-icon name="list" class="h-4 w-4" /> <span class="hidden sm:inline">View all entries</span></a>
+        <a href="{{ route('logbooks.index') }}" class="btn btn-secondary"><x-icon name="list" class="h-4 w-4" /> <span class="hidden sm:inline">All entries</span></a>
+        <button type="button" onclick="window.print()" class="btn btn-secondary hidden sm:inline-flex"><x-icon name="printer" class="h-4 w-4" /> Print</button>
         @can('update', $logbook)
-            <a href="{{ route('logbooks.edit', $logbook) }}" class="btn btn-primary"><x-icon name="pencil" class="h-4 w-4" /> Edit</a>
+            <a href="{{ route('logbooks.edit', $logbook) }}" class="btn btn-primary"><x-icon name="pencil" class="h-4 w-4" /> {{ $logbook->needsRevision() ? 'Fix & resend' : 'Edit' }}</a>
         @endcan
     </x-slot:actions>
 
-    <div class="grid gap-8 lg:grid-cols-3">
+    @if ($logbook->needsRevision())
+        <div class="mb-5 flex animate-fade-up gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-5 py-4 text-sm text-orange-900">
+            <x-icon name="warning" class="h-5 w-5 shrink-0 text-orange-500" />
+            <div class="min-w-0 flex-1">
+                <p class="font-semibold">Sent back for revision by {{ $supervisorName }}</p>
+                <p class="mt-1 whitespace-pre-line text-orange-800">{{ $logbook->supervisor_comment }}</p>
+                @can('update', $logbook)
+                    <a href="{{ route('logbooks.edit', $logbook) }}" class="mt-3 inline-flex items-center gap-1 font-semibold text-orange-700 hover:text-orange-900">Fix this entry <x-icon name="chevron-right" class="h-4 w-4" /></a>
+                @endcan
+            </div>
+        </div>
+    @endif
+
+    <div class="grid gap-5 lg:grid-cols-3">
         {{-- Entry --}}
         <article class="card animate-fade-up overflow-hidden lg:col-span-2">
-            <div class="relative overflow-hidden border-b border-zinc-100 bg-gradient-to-br from-zinc-50 to-white px-6 py-6 sm:px-8">
-                <div class="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-brand-100/60 blur-2xl"></div>
+            <div class="relative overflow-hidden border-b border-zinc-100 bg-gradient-to-br from-brand-50/60 to-white px-6 py-5">
+                <div class="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-ukm-gold/15 blur-2xl"></div>
                 <div class="relative flex flex-wrap items-center justify-between gap-4">
                     <div class="flex items-center gap-4">
-                        <span class="flex h-16 w-16 flex-col items-center justify-center rounded-2xl bg-brand-600 leading-none text-white shadow-lg shadow-brand-600/25">
+                        <span class="flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-brand-600 leading-none text-white shadow-lg shadow-brand-600/25">
                             <span class="text-[10px] font-semibold tracking-wider uppercase opacity-80">Week</span>
                             <span class="mt-0.5 text-2xl font-bold">{{ $logbook->week_no }}</span>
                         </span>
@@ -33,45 +49,71 @@
                     ['Masalah', 'Problems', $logbook->problem, 'warning', 'bg-amber-50 text-amber-600'],
                     ['Tugasan Minggu Hadapan', 'Next week\'s task', $logbook->next_week_task, 'flag', 'bg-emerald-50 text-emerald-600'],
                 ] as [$label, $english, $value, $icon, $tone])
-                    <div class="flex gap-4 px-6 py-6 transition-colors hover:bg-zinc-50/60 sm:px-8" data-reveal>
+                    <div class="flex gap-4 px-6 py-5 transition-colors hover:bg-zinc-50/60" data-reveal>
                         <span class="card-icon {{ $tone }}"><x-icon :name="$icon" class="h-5 w-5" /></span>
                         <div class="min-w-0 flex-1">
                             <dt class="text-sm font-semibold text-zinc-900">{{ $label }} <span class="font-normal text-zinc-400">· {{ $english }}</span></dt>
-                            <dd class="mt-2 leading-relaxed whitespace-pre-line text-zinc-700">{{ $value }}</dd>
+                            <dd class="mt-1.5 leading-relaxed whitespace-pre-line text-zinc-700">{{ $value }}</dd>
                         </div>
                     </div>
                 @endforeach
             </dl>
+
+            {{-- Sign-off block, like the paper logbook --}}
+            <div class="grid border-t border-zinc-100 sm:grid-cols-2 sm:divide-x sm:divide-zinc-100">
+                <div class="px-6 py-5">
+                    <p class="text-xs font-semibold tracking-[0.08em] text-zinc-500 uppercase">Tandatangan Pelajar</p>
+                    @if ($logbook->student_signature)
+                        <img src="{{ $logbook->student_signature }}" alt="Student signature" class="mt-2 h-16 w-full object-contain object-left">
+                    @else
+                        <p class="mt-2 flex h-16 items-center text-sm text-zinc-400">Not signed</p>
+                    @endif
+                    <p class="border-t border-dashed border-zinc-300 pt-1.5 text-xs text-zinc-500">{{ $logbook->student->name }} · {{ ($logbook->submitted_at ?? $logbook->created_at)->format('j M Y') }}</p>
+                </div>
+                <div class="px-6 py-5">
+                    <p class="text-xs font-semibold tracking-[0.08em] text-zinc-500 uppercase">Tandatangan Penyelia</p>
+                    @if ($logbook->isReviewed())
+                        <img src="{{ $logbook->supervisor_signature }}" alt="Supervisor signature" class="mt-2 h-16 w-full object-contain object-left">
+                    @else
+                        <p class="mt-2 flex h-16 items-center text-sm text-zinc-400">{{ $logbook->needsRevision() ? 'Sent back for revision' : 'Waiting for approval' }}</p>
+                    @endif
+                    <p class="border-t border-dashed border-zinc-300 pt-1.5 text-xs text-zinc-500">{{ $supervisorName }}@if ($logbook->isReviewed()) · {{ $logbook->reviewed_at->format('j M Y') }}@endif</p>
+                </div>
+            </div>
         </article>
 
         {{-- Sidebar --}}
-        <aside class="space-y-8" data-reveal-group>
-            {{-- Student --}}
-            <section class="card p-6" data-reveal>
-                <p class="text-xs font-semibold tracking-[0.08em] text-zinc-500 uppercase">Student</p>
-                <div class="mt-4 flex items-center gap-3">
-                    <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 text-sm font-bold text-white">{{ $logbook->student->initials() }}</span>
+        <aside class="space-y-5 print:hidden" data-reveal-group>
+            {{-- Student and status timeline --}}
+            <section class="card p-5" data-reveal>
+                <div class="flex items-center gap-3">
+                    <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-sm font-bold text-white">{{ $logbook->student->initials() }}</span>
                     <div class="min-w-0">
                         <p class="truncate font-semibold">{{ $logbook->student->name }}</p>
                         <p class="text-sm text-zinc-500">{{ $logbook->student->username }}</p>
                     </div>
                 </div>
 
-                {{-- Status timeline --}}
-                <ol class="mt-6 space-y-4 border-t border-zinc-100 pt-5 text-sm">
+                <ol class="mt-4 space-y-3.5 border-t border-zinc-100 pt-4 text-sm">
                     <li class="flex gap-3">
-                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"><x-icon name="check" class="h-4 w-4" /></span>
+                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600"><x-icon name="check" class="h-4 w-4" /></span>
                         <div>
-                            <p class="font-medium">Submitted</p>
-                            <p class="text-xs text-zinc-500">{{ $logbook->created_at->format('j M Y, g:i a') }}</p>
+                            <p class="font-medium">{{ $logbook->student_signature ? 'Submitted & signed by student' : 'Submitted by student' }}</p>
+                            <p class="text-xs text-zinc-500">{{ ($logbook->submitted_at ?? $logbook->created_at)->format('j M Y, g:i a') }}</p>
                         </div>
                     </li>
                     <li class="flex gap-3">
                         @if ($logbook->isReviewed())
                             <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"><x-icon name="shield" class="h-4 w-4" /></span>
                             <div>
-                                <p class="font-medium">Reviewed by {{ $logbook->student->supervisor?->name ?? 'supervisor' }}</p>
+                                <p class="font-medium">Approved by {{ $supervisorName }}</p>
                                 <p class="text-xs text-zinc-500">{{ $logbook->reviewed_at->format('j M Y, g:i a') }}</p>
+                            </div>
+                        @elseif ($logbook->needsRevision())
+                            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-600"><x-icon name="pencil" class="h-4 w-4" /></span>
+                            <div>
+                                <p class="font-medium">Sent back for revision</p>
+                                <p class="text-xs text-zinc-500">Waiting for the student to fix it</p>
                             </div>
                         @else
                             <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600"><x-icon name="clock" class="h-4 w-4" /></span>
@@ -86,17 +128,16 @@
 
             {{-- Review --}}
             <section class="card overflow-hidden" data-reveal>
-                <div class="card-header">
+                <div class="card-header px-5 py-4">
                     <span class="card-icon bg-emerald-50 text-emerald-600"><x-icon name="shield" class="h-5 w-5" /></span>
                     <div>
                         <h3 class="font-semibold">Supervisor review</h3>
-                        <p class="text-xs text-zinc-500">Komen &amp; tandatangan</p>
+                        <p class="text-xs text-zinc-500">Komen, kelulusan &amp; tandatangan</p>
                     </div>
                 </div>
 
                 @can('review', $logbook)
-                    <form method="POST" action="{{ route('logbooks.review', $logbook) }}" class="space-y-5 p-6"
-                          data-confirm="Week {{ $logbook->week_no }} of {{ $logbook->student->name }} will be marked as reviewed and locked from further edits by the student." data-confirm-title="Approve &amp; sign?" data-confirm-button="Approve &amp; sign">
+                    <form method="POST" action="{{ route('logbooks.review', $logbook) }}" class="space-y-4 p-5">
                         @csrf @method('PUT')
 
                         <x-field name="supervisor_comment" label="Komen (Comment)">
@@ -104,47 +145,47 @@
                                       @class(['input', 'input-error' => $errors->has('supervisor_comment')])>{{ old('supervisor_comment', $logbook->supervisor_comment) }}</textarea>
                         </x-field>
 
-                        <div data-signature-pad>
-                            <div class="mb-1.5 flex items-center justify-between">
-                                <span class="label mb-0">Tandatangan (Signature)</span>
-                                <button type="button" data-signature-clear class="rounded-md px-2 py-1 text-xs font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900">Clear</button>
-                            </div>
-                            <canvas class="h-40 w-full cursor-crosshair touch-none rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 transition hover:border-brand-400 hover:bg-white"></canvas>
-                            <input type="hidden" name="supervisor_signature">
-                            @error('supervisor_signature')
-                                <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                            @else
-                                <p class="mt-1.5 text-xs text-zinc-500">Sign with your mouse or finger.</p>
-                            @enderror
-                        </div>
+                        <x-signature-pad name="supervisor_signature" required-for="approve"
+                                         hint="Needed to approve. Not needed to send back."
+                                         empty-message="Please sign in the signature box before approving this entry." />
 
                         @if ($logbook->isReviewed())
-                            <div class="rounded-xl bg-zinc-50 p-4">
-                                <p class="text-xs text-zinc-500">Current signature · {{ $logbook->reviewed_at->format('j M Y, g:i a') }}</p>
-                                <img src="{{ $logbook->supervisor_signature }}" alt="Current signature" class="mt-2 h-16 object-contain">
-                                <p class="mt-2 text-xs text-zinc-500">To update the review, sign again above.</p>
-                            </div>
+                            <p class="rounded-xl bg-zinc-50 px-4 py-3 text-xs text-zinc-500">Signed on {{ $logbook->reviewed_at->format('j M Y, g:i a') }}. Sign again to update the review, or send it back to unlock it for the student.</p>
                         @endif
 
-                        <button type="submit" class="btn btn-primary w-full"><x-icon name="check" class="h-4 w-4" /> {{ $logbook->isReviewed() ? 'Update review' : 'Approve & sign' }}</button>
+                        <div class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                            <button type="submit" name="decision" value="revision" class="btn bg-white text-orange-700 ring-1 ring-orange-200 ring-inset hover:bg-orange-50 focus:ring-orange-500/20"
+                                    data-confirm="Week {{ $logbook->week_no }} goes back to {{ $logbook->student->name }} with your comment so they can fix it and send it again." data-confirm-title="Send back for revision?" data-confirm-button="Send back" data-confirm-icon="question">
+                                <x-icon name="arrow-left" class="h-4 w-4" /> Send back
+                            </button>
+                            <button type="submit" name="decision" value="approve" class="btn btn-primary"
+                                    data-confirm="Week {{ $logbook->week_no }} of {{ $logbook->student->name }} will be approved, signed and locked from further edits." data-confirm-title="Approve &amp; sign?" data-confirm-button="Approve &amp; sign">
+                                <x-icon name="check" class="h-4 w-4" /> {{ $logbook->isReviewed() ? 'Update' : 'Approve & sign' }}
+                            </button>
+                        </div>
                     </form>
                 @elseif ($logbook->isReviewed())
-                    <div class="space-y-5 p-6">
+                    <div class="p-5">
                         <blockquote class="relative rounded-xl bg-emerald-50/60 p-4 pl-5 text-zinc-800">
                             <span class="absolute inset-y-3 left-0 w-1 rounded-full bg-emerald-500"></span>
                             <p class="leading-relaxed whitespace-pre-line">{{ $logbook->supervisor_comment }}</p>
                         </blockquote>
-                        <div>
-                            <p class="text-xs text-zinc-500">Signature</p>
-                            <img src="{{ $logbook->supervisor_signature }}" alt="Supervisor signature" class="mt-2 h-24 w-full rounded-xl border border-zinc-200 bg-white object-contain p-2">
-                        </div>
+                        <p class="mt-3 text-xs text-zinc-500">Approved and signed. This entry is now locked.</p>
+                    </div>
+                @elseif ($logbook->needsRevision())
+                    <div class="p-5">
+                        <blockquote class="relative rounded-xl bg-orange-50/70 p-4 pl-5 text-zinc-800">
+                            <span class="absolute inset-y-3 left-0 w-1 rounded-full bg-orange-500"></span>
+                            <p class="leading-relaxed whitespace-pre-line">{{ $logbook->supervisor_comment }}</p>
+                        </blockquote>
+                        <p class="mt-3 text-xs text-zinc-500">Fix the entry and save it. It goes back to your supervisor automatically.</p>
                     </div>
                 @else
-                    <div class="px-6 py-10 text-center">
-                        <span class="mx-auto flex h-14 w-14 animate-float items-center justify-center rounded-2xl bg-amber-50">
-                            <x-icon name="clock" class="h-7 w-7 text-amber-500" />
+                    <div class="px-5 py-8 text-center">
+                        <span class="mx-auto flex h-12 w-12 animate-float items-center justify-center rounded-2xl bg-amber-50">
+                            <x-icon name="clock" class="h-6 w-6 text-amber-500" />
                         </span>
-                        <p class="mt-4 font-semibold">Waiting for review</p>
+                        <p class="mt-3 font-semibold">Waiting for review</p>
                         <p class="mt-1 text-sm text-zinc-500">Your supervisor hasn't signed this yet. You can still edit it until then.</p>
                     </div>
                 @endcan

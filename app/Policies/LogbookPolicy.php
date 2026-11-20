@@ -25,19 +25,19 @@ class LogbookPolicy
         return $user->isStudent();
     }
 
-    /** Students may edit their own entry until the supervisor has reviewed it. */
+    /** Students may edit their own entry (also after it is sent back) until the supervisor signs it. */
     public function update(User $user, Logbook $logbook): bool
     {
         return $this->owns($user, $logbook) && ! $logbook->isReviewed();
     }
 
-    /** Students may delete their own entries; supervisors never delete. */
+    /** Students may delete their own entries until they are signed; supervisors never delete. */
     public function delete(User $user, Logbook $logbook): bool
     {
-        return $this->owns($user, $logbook);
+        return $this->owns($user, $logbook) && ! $logbook->isReviewed();
     }
 
-    /** The assigned supervisor comments on and signs an entry. */
+    /** The assigned supervisor approves and signs an entry, or sends it back for revision. */
     public function review(User $user, Logbook $logbook): bool
     {
         return $this->supervises($user, $logbook);

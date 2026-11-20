@@ -3,26 +3,34 @@
 <x-layouts.app :title="$user->isSupervisor() ? 'Student Logbooks' : 'My Logbook'"
                :subtitle="$user->isSupervisor() ? 'Read, comment on and sign your students\' weekly entries' : 'All your weekly entries in one place'">
     <x-slot:actions>
-        <button type="button" onclick="window.print()" class="btn btn-secondary hidden sm:inline-flex"><x-icon name="printer" class="h-4 w-4" /> Print</button>
+        @if ($user->isStudent())
+            <a href="{{ route('logbooks.report') }}" class="btn btn-secondary"><x-icon name="printer" class="h-4 w-4" /> <span class="hidden sm:inline">Full logbook</span></a>
+        @elseif ($filters['student'])
+            <a href="{{ route('logbooks.report', ['student' => $filters['student']]) }}" class="btn btn-secondary"><x-icon name="printer" class="h-4 w-4" /> <span class="hidden sm:inline">Full logbook</span></a>
+        @endif
         @can('create', App\Models\Logbook::class)
             <a href="{{ route('logbooks.create') }}" class="btn btn-primary"><x-icon name="plus" class="h-4 w-4" /> <span class="hidden sm:inline">New entry</span></a>
         @endcan
     </x-slot:actions>
 
     {{-- Filters --}}
-    <form method="GET" class="mb-6 flex animate-fade-up flex-wrap items-center justify-between gap-3 print:hidden">
+    <form method="GET" class="mb-4 flex animate-fade-up flex-wrap items-center justify-between gap-3 print:hidden">
         <div class="inline-flex rounded-xl border border-zinc-200 bg-white p-1 text-sm shadow-xs">
-            @foreach (['' => ['All', 'document'], 'pending' => ['Pending', 'clock'], 'reviewed' => ['Reviewed', 'shield']] as $value => [$label, $icon])
+            @foreach (['' => ['All', 'document'], 'pending' => ['Pending', 'clock'], 'revision' => ['Needs fixing', 'pencil'], 'approved' => ['Approved', 'shield']] as $value => [$label, $icon])
                 @php($active = ($filters['status'] ?? '') === $value)
                 <a href="{{ route('logbooks.index', array_filter([...$filters, 'status' => $value])) }}"
-                   @class(['inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 font-medium transition duration-200', 'bg-zinc-900 text-white shadow-sm' => $active, 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! $active])>
+                   @class(['inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 font-medium transition duration-200', 'bg-brand-600 text-white shadow-sm' => $active, 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900' => ! $active])>
                     <x-icon :name="$icon" class="h-4 w-4" /> {{ $label }}
                 </a>
             @endforeach
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+            <input type="hidden" name="status" value="{{ $filters['status'] }}">
+            <label class="input-icon-wrap relative">
+                <x-icon name="search" class="input-icon pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Search entries…" class="input w-56 py-2.5 pl-9">
+            </label>
             @if ($user->isSupervisor() && $students->isNotEmpty())
-                <input type="hidden" name="status" value="{{ $filters['status'] }}">
                 <select name="student" onchange="this.form.submit()" data-select class="input w-auto min-w-64">
                     <option value="">All students</option>
                     @foreach ($students as $s)
@@ -49,7 +57,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-100">
                     @forelse ($logbooks as $logbook)
-                        @php($needsReview = $user->isSupervisor() && ! $logbook->isReviewed())
+                        @php($needsReview = $user->isSupervisor() && $logbook->isPending())
                         <tr class="table-row group">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-white leading-none ring-1 ring-zinc-200 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
@@ -102,7 +110,7 @@
                                 </span>
                                 <p class="mt-4 font-semibold text-zinc-900">No entries found</p>
                                 <p class="mt-1 text-sm text-zinc-500">
-                                    @if ($filters['status'] || $filters['student'])
+                                    @if ($filters['status'] || $filters['student'] || $filters['q'])
                                         Try a different filter.
                                     @elseif ($user->isStudent())
                                         Start by writing your first weekly entry.

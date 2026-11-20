@@ -79,11 +79,22 @@ document.querySelectorAll('[data-signature-pad]').forEach((wrapper) => {
     clear?.addEventListener('click', () => pad.clear());
 
     form?.addEventListener('submit', (event) => {
+        // A box tied to one decision (e.g. "approve") is ignored for the other buttons.
+        const requiredFor = wrapper.dataset.requiredFor;
+        if (requiredFor && event.submitter?.value !== requiredFor) {
+            input.value = '';
+            return;
+        }
         if (pad.isEmpty()) {
-            // Stop here so the "Approve & sign?" confirmation doesn't open for an empty pad.
+            if ('optional' in wrapper.dataset) {
+                input.value = '';
+                return;
+            }
+            // Stop here so the confirmation popup doesn't open for an empty pad.
             event.preventDefault();
             event.stopImmediatePropagation();
-            Alert.fire({ icon: 'info', title: 'Signature needed', text: 'Please sign in the signature box before approving this entry.', confirmButtonText: 'OK' });
+            Alert.fire({ icon: 'info', title: 'Signature needed', text: wrapper.dataset.emptyMessage, confirmButtonText: 'OK' });
+            canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
         input.value = pad.toDataURL('image/png');
@@ -103,6 +114,16 @@ document.querySelectorAll('[data-password-toggle]').forEach((wrapper) => {
         wrapper.querySelector('[data-icon-show]').classList.toggle('hidden', show);
         wrapper.querySelector('[data-icon-hide]').classList.toggle('hidden', !show);
     });
+});
+
+// Close dropdowns (the notification bell) when clicking elsewhere or pressing Escape.
+document.addEventListener('click', (event) => {
+    document.querySelectorAll('details[data-dropdown][open]').forEach((d) => {
+        if (!d.contains(event.target)) d.removeAttribute('open');
+    });
+});
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') document.querySelectorAll('details[data-dropdown][open]').forEach((d) => d.removeAttribute('open'));
 });
 
 // Mobile sidebar toggle.

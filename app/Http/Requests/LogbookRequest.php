@@ -34,6 +34,8 @@ class LogbookRequest extends FormRequest
             'current_status' => ['required', 'string', 'max:5000'],
             'problem' => ['required', 'string', 'max:5000'],
             'next_week_task' => ['required', 'string', 'max:5000'],
+            // Drawn on a canvas and posted as a PNG data URL. Optional when editing: blank keeps the old one.
+            'student_signature' => [$logbook ? 'nullable' : 'required', 'string', 'starts_with:data:image/png;base64,', 'max:500000'],
         ];
     }
 
@@ -41,6 +43,8 @@ class LogbookRequest extends FormRequest
     {
         return [
             'week_no.unique' => 'You already have an entry for this week. Pick a different week number.',
+            'student_signature.required' => 'Please sign in the signature box before submitting.',
+            'student_signature.starts_with' => 'The signature could not be read. Please sign again.',
         ];
     }
 
