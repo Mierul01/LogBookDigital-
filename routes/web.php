@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LogbookController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('profile/password', [ProfileController::class, 'password'])->name('profile.password');
     Route::put('profile/project', [ProfileController::class, 'project'])->middleware('role:student')->name('profile.project');
+
+    Route::middleware('role:supervisor,coordinator')->group(function () {
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/students.csv', [ReportController::class, 'exportStudents'])->name('reports.students.export');
+        Route::get('reports/supervisors.csv', [ReportController::class, 'exportSupervisors'])->name('reports.supervisors.export');
+    });
 
     Route::middleware('role:supervisor')->group(function () {
         Route::resource('students', StudentController::class)->except('show');

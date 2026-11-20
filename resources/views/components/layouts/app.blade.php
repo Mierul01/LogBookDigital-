@@ -61,6 +61,11 @@
                 <a href="{{ route('students.index') }}" @class(['nav-link', 'active' => request()->routeIs('students.*')])>
                     <x-icon name="users" /> Students
                 </a>
+            @endif
+            @if ($user->isStaff())
+                <a href="{{ route('reports.index') }}" @class(['nav-link', 'active' => request()->routeIs('reports.*')])>
+                    <x-icon name="chart" /> Reports
+                </a>
             @else
                 <a href="{{ route('logbooks.create') }}" @class(['nav-link', 'active' => request()->routeIs('logbooks.create')])>
                     <x-icon name="plus" /> New Entry
@@ -102,6 +107,7 @@
             $section = match (true) {
                 request()->routeIs('logbooks.*') => [$user->isStaff() ? 'Student Logbooks' : 'My Logbook', route('logbooks.index')],
                 request()->routeIs('admin.semesters.*') => ['Semesters', route('admin.semesters.index')],
+                request()->routeIs('reports.*') => ['Reports', route('reports.index')],
                 request()->routeIs('admin.*') => ['Users', route('admin.users.index')],
                 request()->routeIs('students.*') => ['Students', route('students.index')],
                 request()->routeIs('profile') => ['Account', route('profile')],
