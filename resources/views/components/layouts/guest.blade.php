@@ -22,14 +22,14 @@
                     <img src="{{ asset('images/ukm.png') }}" alt="UKM" class="h-full w-full object-contain">
                 </span>
                 <span class="leading-tight">
-                    <span class="block text-lg font-bold">Digital LogBook<span class="text-ukm-gold">+</span></span>
-                    <span class="block text-sm text-slate-300">Universiti Kebangsaan Malaysia</span>
+                    <span class="block text-lg font-bold">{{ __('Digital LogBook') }}<span class="text-ukm-gold">+</span></span>
+                    <span class="block text-sm text-slate-300">{{ __('Universiti Kebangsaan Malaysia') }}</span>
                 </span>
             </div>
 
             <div class="max-w-lg animate-fade-up">
-                <h2 class="text-4xl leading-tight font-bold tracking-tight xl:text-5xl">Every week of your FYP, <span class="text-ukm-gold">logged and signed.</span></h2>
-                <p class="mt-4 text-lg text-slate-200">Record your progress, get feedback from your supervisor, and keep your whole semester in one place.</p>
+                <h2 class="text-4xl leading-tight font-bold tracking-tight xl:text-5xl">{{ __('Every week of your FYP,') }} <span class="text-ukm-gold">{{ __('logged and signed.') }}</span></h2>
+                <p class="mt-4 text-lg text-slate-200">{{ __('Record your progress, get feedback from your supervisor, and keep your whole semester in one place.') }}</p>
             </div>
 
             <p class="text-sm text-slate-400">&copy; {{ date('Y') }} Digital LogBook+</p>
@@ -39,9 +39,10 @@
     {{-- Form panel --}}
     <div class="app-bg flex flex-1 flex-col justify-center px-6 py-12 sm:px-12 lg:px-20">
         <div class="mx-auto w-full max-w-sm animate-fade-up">
+            <div class="mb-6 flex justify-end"><x-locale-switch /></div>
             <div class="mb-8 flex items-center gap-3 lg:hidden">
                 <img src="{{ asset('images/ukm.png') }}" alt="UKM" class="h-10 w-10 object-contain">
-                <span class="text-lg font-semibold">Digital LogBook<span class="text-ukm-gold">+</span></span>
+                <span class="text-lg font-semibold">{{ __('Digital LogBook') }}<span class="text-ukm-gold">+</span></span>
             </div>
             <x-flash />
             {{ $slot }}

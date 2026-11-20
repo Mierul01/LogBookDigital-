@@ -19,6 +19,11 @@ class User extends Authenticatable
 
     public const ROLE_SUPERVISOR = 'supervisor';
 
+    /** FYP coordinator: manages accounts, semesters and sees every logbook in the faculty. */
+    public const ROLE_COORDINATOR = 'coordinator';
+
+    public const ROLES = [self::ROLE_STUDENT, self::ROLE_SUPERVISOR, self::ROLE_COORDINATOR];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -28,6 +33,7 @@ class User extends Authenticatable
         'username',
         'name',
         'email',
+        'email_notifications',
         'role',
         'supervisor_id',
         'password',
@@ -53,7 +59,14 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'email_notifications' => 'boolean',
         ];
+    }
+
+    /** Email notices go to users with an address who haven't turned them off. */
+    public function wantsEmail(): bool
+    {
+        return filled($this->email) && $this->email_notifications !== false;
     }
 
     public function isStudent(): bool
@@ -64,6 +77,17 @@ class User extends Authenticatable
     public function isSupervisor(): bool
     {
         return $this->role === self::ROLE_SUPERVISOR;
+    }
+
+    public function isCoordinator(): bool
+    {
+        return $this->role === self::ROLE_COORDINATOR;
+    }
+
+    /** Supervisors and coordinators: they read and review other people's logbooks. */
+    public function isStaff(): bool
+    {
+        return $this->isSupervisor() || $this->isCoordinator();
     }
 
     /** The supervisor a student is assigned to. */
@@ -90,10 +114,41 @@ class User extends Authenticatable
         return $this->hasManyThrough(Logbook::class, User::class, 'supervisor_id', 'student_id');
     }
 
-    /** First week number the student hasn't logged yet, or null when every week is done. */
+    /** A student's projects, one per semester. */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'student_id');
+    }
+
+    /** The student's project in the given (default: current) semester. */
+    public function project(?Semester $semester = null): ?Project
+    {
+        $semester ??= Semester::current();
+
+        return $semester ? $this->projects()->where('semester_id', $semester->id)->first() : null;
+    }
+
+    /**
+     * Weeks of the semester whose deadline has passed without an entry.
+     *
+     * @return list<int>
+     */
+    public function overdueWeeks(?Semester $semester = null): array
+    {
+        $semester ??= Semester::current();
+        if (! $semester) {
+            return [];
+        }
+
+        $logged = $this->logbooks()->inSemester($semester)->pluck('week_no')->all();
+
+        return array_values(array_diff(range(1, $semester->weeksPastDue()), $logged));
+    }
+
+    /** First week of the current semester the student hasn't logged yet, or null when every week is done. */
     public function nextLogbookWeek(): ?int
     {
-        $usedWeeks = $this->logbooks()->pluck('week_no')->all();
+        $usedWeeks = $this->logbooks()->inSemester(Semester::current())->pluck('week_no')->all();
 
         return collect(range(1, Logbook::MAX_WEEKS))->first(fn (int $week) => ! in_array($week, $usedWeeks));
     }

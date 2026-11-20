@@ -60,16 +60,11 @@ class StudentManagementTest extends TestCase
         $this->assertModelExists($student);
     }
 
-    public function test_supervisor_can_self_register(): void
+    public function test_public_registration_is_closed(): void
     {
-        $this->post('/register', [
-            'name' => 'Dr. Lee',
-            'username' => 'drlee',
-            'email' => 'lee@ukm.edu.my',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-        ])->assertRedirect('/dashboard');
+        $this->get('/register')->assertNotFound();
+        $this->post('/register', ['username' => 'drlee', 'name' => 'Dr. Lee', 'password' => 'password123'])->assertNotFound();
 
-        $this->assertTrue(User::where('username', 'drlee')->first()->isSupervisor());
+        $this->assertNull(User::where('username', 'drlee')->first());
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Logbook;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -14,11 +15,16 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $weeks = range(1, Logbook::MAX_WEEKS);
+        $semester = Semester::current();
 
         // Every query below is scoped to the student's own entries, or the supervisor's students' entries.
-        $scope = fn (): Builder => Logbook::query()->when(
-            $user->isSupervisor(),
-            fn ($q) => $q->whereIn('student_id', User::query()->select('id')->where('supervisor_id', $user->id)->where('role', User::ROLE_STUDENT)),
+        // The coordinator sees the whole faculty.
+        $studentQuery = fn () => User::query()->where('role', User::ROLE_STUDENT)
+            ->when($user->isSupervisor(), fn ($q) => $q->where('supervisor_id', $user->id));
+
+        $scope = fn (): Builder => Logbook::query()->inSemester($semester)->when(
+            $user->isStaff(),
+            fn ($q) => $q->whereIn('student_id', $studentQuery()->select('id')),
             fn ($q) => $q->where('student_id', $user->id),
         );
 
@@ -41,7 +47,7 @@ class DashboardController extends Controller
             Logbook::STATUS_REVISION => (int) $matrix->where('status', Logbook::STATUS_REVISION)->sum('total'),
         ];
         $total = array_sum($byStatus);
-        $students = $user->isSupervisor() ? $user->students()->count() : null;
+        $students = $user->isStaff() ? $studentQuery()->count() : null;
 
         // Average hours from submission to approval, over the latest 200 approvals.
         $reviewHours = $scope()
@@ -53,6 +59,12 @@ class DashboardController extends Controller
             ->avg(fn (Logbook $l) => max(0, $l->submitted_at->diffInMinutes($l->reviewed_at)) / 60);
 
         $thisWeek = $scope()->where('created_at', '>=', now()->subDays(7))->count();
+
+        // Weeks whose deadline has passed: every student should have an entry for each of them.
+        $pastDue = $semester?->weeksPastDue() ?? 0;
+        $missing = $user->isStaff()
+            ? max(0, $students * $pastDue - $scope()->where('week_no', '<=', $pastDue)->count())
+            : count($user->overdueWeeks($semester));
 
         return view('dashboard', [
             'user' => $user,
@@ -66,10 +78,12 @@ class DashboardController extends Controller
                 'weeks' => Logbook::MAX_WEEKS,
                 'next_week' => $user->isStudent() ? $user->nextLogbookWeek() : null,
                 'this_week' => $thisWeek,
+                'past_due' => $pastDue,
+                'missing' => $missing,
                 'approval_rate' => $total ? round($byStatus[Logbook::STATUS_APPROVED] / $total * 100) : 0,
                 'review_hours' => $reviewHours,
                 // Entries the supervisor could expect so far (each student x weeks).
-                'expected' => $user->isSupervisor() ? $students * Logbook::MAX_WEEKS : Logbook::MAX_WEEKS,
+                'expected' => $user->isStaff() ? $students * Logbook::MAX_WEEKS : Logbook::MAX_WEEKS,
             ],
             'series' => [
                 'submitted' => $perWeek(),
@@ -80,13 +94,26 @@ class DashboardController extends Controller
             'recent' => $scope()->with('student')->latest('updated_at')->latest('id')->take(5)->get(),
             'activities' => $user->notifications()->latest()->take(5)->get(),
             // Student: entries keyed by week number for the timeline.
-            'timeline' => $user->isStudent() ? $user->logbooks()->get(['id', 'week_no', 'status'])->keyBy('week_no') : collect(),
+            'timeline' => $user->isStudent() ? $user->logbooks()->inSemester($semester)->get(['id', 'week_no', 'status'])->keyBy('week_no') : collect(),
+            'semester' => $semester,
+            'project' => $user->isStudent() ? $user->project($semester) : null,
+            'overdueWeeks' => $user->isStudent() ? $user->overdueWeeks($semester) : [],
+            // Staff: students with the most weeks missing past their deadline.
+            'behind' => $user->isStaff() && $pastDue
+                ? $studentQuery()
+                    ->withCount(['logbooks as due_logged' => fn ($q) => $q->inSemester($semester)->where('week_no', '<=', $pastDue)])
+                    ->orderBy('due_logged')
+                    ->orderBy('name')
+                    ->take(5)
+                    ->get()
+                    ->filter(fn ($s) => $s->due_logged < $pastDue)
+                : collect(),
             // Supervisor: students with the most approved weeks.
-            'topStudents' => $user->isSupervisor()
-                ? $user->students()
+            'topStudents' => $user->isStaff()
+                ? $studentQuery()
                     ->withCount([
-                        'logbooks',
-                        'logbooks as reviewed_count' => fn ($q) => $q->where('status', Logbook::STATUS_APPROVED),
+                        'logbooks' => fn ($q) => $q->inSemester($semester),
+                        'logbooks as reviewed_count' => fn ($q) => $q->inSemester($semester)->where('status', Logbook::STATUS_APPROVED),
                     ])
                     ->orderByDesc('reviewed_count')
                     ->orderBy('name')
@@ -94,7 +121,7 @@ class DashboardController extends Controller
                     ->get()
                 : collect(),
             // Supervisor: oldest entries still waiting. Student: latest supervisor comments.
-            'queue' => $user->isSupervisor()
+            'queue' => $user->isStaff()
                 ? $scope()->with('student')->where('status', Logbook::STATUS_PENDING)->oldest('submitted_at')->take(5)->get()
                 : $scope()->whereNotNull('supervisor_comment')->latest('updated_at')->take(5)->get(),
         ]);

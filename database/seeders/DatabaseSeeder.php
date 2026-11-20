@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Logbook;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -14,11 +15,23 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed demo accounts for local development.
      *
+     * Coordinator: coordinator / password
      * Supervisor: dr.aisyah / password
      * Students:   A192910, A192911 / password
      */
     public function run(): void
     {
+        $semester = Semester::factory()->current()->create([
+            'name' => 'Semester 1 2026/2027',
+            'starts_on' => now()->subWeeks(5)->startOfWeek(),
+        ]);
+
+        User::factory()->coordinator()->create([
+            'username' => 'coordinator',
+            'name' => 'Prof. Madya Dr. Hafiz Osman',
+            'email' => 'fyp.coordinator@ukm.edu.my',
+        ]);
+
         $supervisor = User::factory()->supervisor()->create([
             'username' => 'dr.aisyah',
             'name' => 'Dr. Aisyah Rahman',
@@ -36,6 +49,9 @@ class DatabaseSeeder extends Seeder
             'name' => 'Nurul Huda Ismail',
             'email' => null,
         ]);
+
+        $amirul->projects()->create(['semester_id' => $semester->id, 'title' => 'Digital LogBook+: a weekly FYP logbook for UKM', 'stage' => 'FYP1']);
+        $nurul->projects()->create(['semester_id' => $semester->id, 'title' => 'QR code attendance app for UKM lectures', 'stage' => 'FYP1']);
 
         $weeks = [
             ['Set up the project repository and drafted the system requirements.', 'Requirements gathering in progress.', 'Unclear scope for the reporting module.', 'Finalise use-case diagram.'],

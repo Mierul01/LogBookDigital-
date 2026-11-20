@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StudentRequest;
+use App\Models\Logbook;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,10 +19,16 @@ class StudentController extends Controller
     {
         $search = trim((string) $request->query('q'));
 
+        $semester = Semester::current();
+
         $students = $request->user()->students()
+            ->with(['projects' => fn ($q) => $q->where('semester_id', $semester?->id)])
+            // Entries for weeks whose deadline has passed (to count overdue weeks).
+            ->withCount(['logbooks as due_logged' => fn ($q) => $q->inSemester($semester)->where('week_no', '<=', $semester?->weeksPastDue() ?? 0)])
+            // Progress in the current semester.
             ->withCount([
-                'logbooks',
-                'logbooks as reviewed_count' => fn ($q) => $q->whereNotNull('reviewed_at'),
+                'logbooks' => fn ($q) => $q->inSemester($semester),
+                'logbooks as reviewed_count' => fn ($q) => $q->inSemester($semester)->where('status', Logbook::STATUS_APPROVED),
             ])
             ->when($search, fn ($q) => $q->where(fn ($q) => $q
                 ->where('name', 'like', "%{$search}%")
@@ -29,7 +37,7 @@ class StudentController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('students.index', ['students' => $students, 'search' => $search]);
+        return view('students.index', ['students' => $students, 'search' => $search, 'pastDue' => $semester?->weeksPastDue() ?? 0]);
     }
 
     public function create(): View
@@ -72,6 +80,7 @@ class StudentController extends Controller
     {
         $this->ensureSupervises($request, $student);
 
+        \Illuminate\Support\Facades\Storage::disk('local')->deleteDirectory("attachments/{$student->id}");
         $student->delete();
 
         return redirect()->route('students.index')->with('success', "{$student->name} and their logbook entries were removed.")->with('success_title', 'Student removed');

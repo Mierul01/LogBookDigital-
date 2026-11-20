@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Logbook;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,6 +22,7 @@ class LogbookTest extends TestCase
     {
         parent::setUp();
 
+        Semester::factory()->current()->create();
         $this->supervisor = User::factory()->supervisor()->create();
         $this->student = User::factory()->supervisedBy($this->supervisor)->create();
     }
@@ -34,6 +36,9 @@ class LogbookTest extends TestCase
             'current_status' => 'On track.',
             'problem' => 'None.',
             'next_week_task' => 'Build the dashboard.',
+            'meeting_mode' => 'face_to_face',
+            'meeting_time' => '10:00',
+            'meeting_minutes' => 30,
             'student_signature' => self::SIGNATURE,
             ...$overrides,
         ];
@@ -42,6 +47,24 @@ class LogbookTest extends TestCase
     public function test_guests_are_redirected_to_login(): void
     {
         $this->get('/dashboard')->assertRedirect('/login');
+    }
+
+    public function test_a_meeting_needs_a_time_and_length(): void
+    {
+        $this->actingAs($this->student)
+            ->post('/logbooks', $this->entry(['meeting_time' => '', 'meeting_minutes' => '']))
+            ->assertSessionHasErrors(['meeting_time', 'meeting_minutes']);
+    }
+
+    public function test_a_week_without_a_meeting_needs_no_time(): void
+    {
+        $this->actingAs($this->student)
+            ->post('/logbooks', $this->entry(['meeting_mode' => 'none', 'meeting_time' => '', 'meeting_minutes' => '']))
+            ->assertSessionHasNoErrors();
+
+        $logbook = $this->student->logbooks()->first();
+        $this->assertFalse($logbook->hadMeeting());
+        $this->assertNull($logbook->meeting_time);
     }
 
     public function test_student_can_log_in_with_lowercase_matric_number(): void

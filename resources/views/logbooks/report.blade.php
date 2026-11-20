@@ -1,6 +1,7 @@
 @php
     $weeks = range(1, App\Models\Logbook::MAX_WEEKS);
     $approved = $logbooks->filter->isReviewed()->count();
+    $meetings = $logbooks->filter->hadMeeting()->count();
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -42,6 +43,7 @@
             <div class="shrink-0 rounded-xl bg-brand-50 px-4 py-3 text-right">
                 <p class="text-2xl font-bold text-brand-700">{{ $approved }}<span class="text-base text-brand-400">/{{ count($weeks) }}</span></p>
                 <p class="text-xs text-brand-700/80">weeks approved</p>
+                <p class="mt-1 text-xs text-brand-700/80">{{ $meetings }} {{ Str::plural('meeting', $meetings) }} held</p>
             </div>
         </header>
 
@@ -50,6 +52,8 @@
             <div><dt class="text-xs text-zinc-500">No. Matrik</dt><dd class="font-semibold">{{ $student->username }}</dd></div>
             <div><dt class="text-xs text-zinc-500">Penyelia</dt><dd class="font-semibold">{{ $student->supervisor?->name ?? '—' }}</dd></div>
             <div><dt class="text-xs text-zinc-500">Dicetak</dt><dd class="font-semibold">{{ now()->format('j M Y') }}</dd></div>
+            <div class="col-span-2 sm:col-span-3"><dt class="text-xs text-zinc-500">Tajuk Projek</dt><dd class="font-semibold">{{ $project?->title ?? '—' }}</dd></div>
+            <div><dt class="text-xs text-zinc-500">Semester · Peringkat</dt><dd class="font-semibold">{{ $semester?->name ?? '—' }}{{ $project ? ' · '.$project->stageLabel() : '' }}</dd></div>
         </dl>
 
         {{-- Weeks --}}
@@ -66,9 +70,12 @@
                             @endif
                         </h2>
                         @if ($entry)
-                            <x-status-badge :logbook="$entry" />
+                            <span class="flex items-center gap-1.5"><x-late-badge :logbook="$entry" /> <x-status-badge :logbook="$entry" /></span>
                         @endif
                     </div>
+                    @if ($entry)
+                        <p class="mt-1.5 text-xs text-zinc-500">Perjumpaan: {{ $entry->meetingSummary() }}</p>
+                    @endif
 
                     @if ($entry)
                         <dl class="mt-3 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
@@ -79,11 +86,15 @@
                                 'Tugasan Minggu Hadapan' => $entry->next_week_task,
                             ] as $label => $value)
                                 <div>
-                                    <dt class="text-xs font-semibold text-zinc-500">{{ $label }}</dt>
+                                    <dt class="text-xs font-semibold text-zinc-500">{{ __($label) }}</dt>
                                     <dd class="mt-0.5 leading-relaxed whitespace-pre-line text-zinc-800">{{ $value }}</dd>
                                 </div>
                             @endforeach
                         </dl>
+
+                        @if ($entry->attachments->isNotEmpty())
+                            <p class="mt-2 text-xs text-zinc-500"><span class="font-semibold">Lampiran:</span> {{ $entry->attachments->pluck('original_name')->implode(', ') }}</p>
+                        @endif
 
                         @if ($entry->supervisor_comment)
                             <div class="mt-3 rounded-lg bg-zinc-50 px-3 py-2 text-sm">
@@ -111,7 +122,7 @@
                             </div>
                         </div>
                     @else
-                        <p class="mt-2 text-sm text-zinc-400">No entry for this week.</p>
+                        <p class="mt-2 text-sm text-zinc-400">No entry for this week.@if ($semester && $semester->dueAt($week)->isPast()) <span class="font-semibold text-red-600">Overdue (due {{ $semester->dueAt($week)->format('j M Y') }}).</span>@endif</p>
                     @endif
                 </section>
             @endforeach

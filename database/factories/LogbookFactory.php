@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Logbook;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -23,8 +24,13 @@ class LogbookFactory extends Factory
     {
         return [
             'student_id' => User::factory(),
+            'semester_id' => fn () => Semester::current()?->id ?? Semester::factory()->current()->create()->id,
             'week_no' => fake()->unique()->numberBetween(1, Logbook::MAX_WEEKS),
             'entry_date' => fake()->dateTimeBetween('-3 months'),
+            'meeting_mode' => 'face_to_face',
+            'meeting_time' => '10:00',
+            'meeting_minutes' => 30,
+            'meeting_place' => 'Bilik Perbincangan 2',
             'progress' => fake()->paragraph(),
             'current_status' => fake()->sentence(),
             'problem' => fake()->sentence(),

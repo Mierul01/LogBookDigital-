@@ -3,10 +3,12 @@
 namespace App\Notifications;
 
 use App\Models\Logbook;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * In-app message (the bell in the top bar) when an entry is submitted, approved or sent back.
+ * Sent when an entry is submitted, approved, sent back or resent: the bell in the top bar,
+ * plus an email for users who have an address and haven't turned emails off.
  */
 class LogbookActivity extends Notification
 {
@@ -19,7 +21,30 @@ class LogbookActivity extends Notification
     /** @return array<int, string> */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return $notifiable->wantsEmail() ? ['database', 'mail'] : ['database'];
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $subject = match ($this->kind) {
+            'approved' => "Week {$this->logbook->week_no} approved",
+            'revision' => "Week {$this->logbook->week_no} needs fixing",
+            'resubmitted' => "Week {$this->logbook->week_no} resent for review",
+            default => "New logbook entry: week {$this->logbook->week_no}",
+        };
+
+        $mail = (new MailMessage)
+            ->subject($subject.' · '.config('app.name'))
+            ->greeting('Hello '.$notifiable->name.',')
+            ->line($this->message);
+
+        if ($this->kind === 'revision' && $this->logbook->supervisor_comment) {
+            $mail->line('Supervisor\'s comment: "'.$this->logbook->supervisor_comment.'"');
+        }
+
+        return $mail
+            ->action('Open the entry', route('logbooks.show', $this->logbook))
+            ->salutation('Digital LogBook+ · Universiti Kebangsaan Malaysia');
     }
 
     /** @return array<string, mixed> */

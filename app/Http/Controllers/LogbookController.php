@@ -5,10 +5,16 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LogbookRequest;
 use App\Http\Requests\ReviewLogbookRequest;
 use App\Models\Logbook;
+use App\Models\LogbookAttachment;
+use App\Models\LogbookEvent;
+use App\Models\Semester;
+use App\Models\User;
 use App\Notifications\LogbookActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\View\View;
 
 class LogbookController extends Controller
@@ -25,13 +31,26 @@ class LogbookController extends Controller
             $status = Logbook::STATUS_APPROVED;
         }
 
-        $query = $user->isSupervisor() ? $user->supervisedLogbooks() : $user->logbooks();
+        $supervisorId = $user->isCoordinator() ? $request->query('supervisor') : null;
+
+        // Current semester unless another one (or "all") is picked.
+        $semesters = Semester::query()->orderByDesc('starts_on')->get(['id', 'name', 'is_current']);
+        $semesterParam = $request->query('semester');
+        $semester = $semesterParam === 'all' ? null : ($semesters->firstWhere('id', (int) $semesterParam) ?? $semesters->firstWhere('is_current', true));
+
+        $query = match (true) {
+            $user->isCoordinator() => Logbook::query()->select('logbooks.*'),
+            $user->isSupervisor() => $user->supervisedLogbooks(),
+            default => $user->logbooks(),
+        };
 
         $logbooks = $query
-            ->with('student')
+            ->with(['student', 'semester'])
+            ->inSemester($semester)
             ->when(in_array($status, [Logbook::STATUS_PENDING, Logbook::STATUS_REVISION, Logbook::STATUS_APPROVED], true),
                 fn ($q) => $q->where('logbooks.status', $status))
-            ->when($user->isSupervisor() && $studentId, fn ($q) => $q->where('logbooks.student_id', $studentId))
+            ->when($user->isStaff() && $studentId, fn ($q) => $q->where('logbooks.student_id', $studentId))
+            ->when($supervisorId, fn ($q) => $q->whereIn('logbooks.student_id', User::query()->select('id')->where('supervisor_id', $supervisorId)))
             ->when($search, fn ($q) => $q->where(fn ($q) => $q
                 ->where('logbooks.progress', 'like', "%{$search}%")
                 ->orWhere('logbooks.current_status', 'like', "%{$search}%")
@@ -43,8 +62,17 @@ class LogbookController extends Controller
 
         return view('logbooks.index', [
             'logbooks' => $logbooks,
-            'students' => $user->isSupervisor() ? $user->students()->orderBy('name')->get(['id', 'name', 'username']) : collect(),
-            'filters' => ['status' => $status, 'student' => $studentId, 'q' => $search],
+            'students' => match (true) {
+                $user->isCoordinator() => User::query()->where('role', User::ROLE_STUDENT)
+                    ->when($supervisorId, fn ($q) => $q->where('supervisor_id', $supervisorId))
+                    ->orderBy('name')->get(['id', 'name', 'username']),
+                $user->isSupervisor() => $user->students()->orderBy('name')->get(['id', 'name', 'username']),
+                default => collect(),
+            },
+            'supervisors' => $user->isCoordinator() ? User::query()->where('role', User::ROLE_SUPERVISOR)->orderBy('name')->get(['id', 'name']) : collect(),
+            'semesters' => $semesters,
+            'semester' => $semester,
+            'filters' => ['status' => $status, 'student' => $studentId, 'supervisor' => $supervisorId, 'q' => $search, 'semester' => $semesterParam],
         ]);
     }
 
@@ -54,6 +82,10 @@ class LogbookController extends Controller
 
         $user = $request->user();
 
+        if (! Semester::current()) {
+            return $this->noSemester();
+        }
+
         if (! $user->nextLogbookWeek()) {
             return redirect()->route('logbooks.index')
                 ->with('success_title', 'All weeks logged')
@@ -62,7 +94,7 @@ class LogbookController extends Controller
 
         return view('logbooks.form', [
             'logbook' => new Logbook(['week_no' => $user->nextLogbookWeek(), 'entry_date' => now()]),
-            'usedWeeks' => $user->logbooks()->pluck('week_no')->all(),
+            'usedWeeks' => $user->logbooks()->inSemester(Semester::current())->pluck('week_no')->all(),
         ]);
     }
 
@@ -70,11 +102,19 @@ class LogbookController extends Controller
     {
         Gate::authorize('create', Logbook::class);
 
+        if (! Semester::current()) {
+            return $this->noSemester();
+        }
+
         $logbook = $request->user()->logbooks()->create([
-            ...$request->validated(),
+            ...$request->safe()->except(['attachments', 'remove_attachments']),
+            'semester_id' => Semester::current()?->id,
             'status' => Logbook::STATUS_PENDING,
             'submitted_at' => now(),
         ]);
+
+        $added = $this->saveAttachments($request, $logbook);
+        $logbook->record('submitted', $request->user(), note: $added ? 'Files: '.implode(', ', $added) : null);
 
         $this->notifySupervisor($logbook, 'submitted', "{$logbook->student->name} submitted week {$logbook->week_no}.");
 
@@ -87,7 +127,7 @@ class LogbookController extends Controller
     {
         Gate::authorize('view', $logbook);
 
-        return view('logbooks.show', ['logbook' => $logbook->load('student.supervisor')]);
+        return view('logbooks.show', ['logbook' => $logbook->load(['student.supervisor', 'attachments', 'events.user'])]);
     }
 
     public function edit(Request $request, Logbook $logbook): View
@@ -96,7 +136,7 @@ class LogbookController extends Controller
 
         return view('logbooks.form', [
             'logbook' => $logbook,
-            'usedWeeks' => $request->user()->logbooks()->whereKeyNot($logbook->id)->pluck('week_no')->all(),
+            'usedWeeks' => $request->user()->logbooks()->where('semester_id', $logbook->semester_id)->whereKeyNot($logbook->id)->pluck('week_no')->all(),
         ]);
     }
 
@@ -104,7 +144,11 @@ class LogbookController extends Controller
     {
         Gate::authorize('update', $logbook);
 
-        $data = $request->validated();
+        $data = $request->safe()->except(['attachments', 'remove_attachments']);
+        // No meeting this week: clear any meeting details left from before.
+        if (($data['meeting_mode'] ?? null) === 'none') {
+            $data += ['meeting_time' => null, 'meeting_minutes' => null, 'meeting_place' => null];
+        }
         if (blank($data['student_signature'] ?? null)) {
             unset($data['student_signature']);
         }
@@ -115,7 +159,22 @@ class LogbookController extends Controller
             $data += ['status' => Logbook::STATUS_PENDING, 'submitted_at' => now()];
         }
 
+        $before = $logbook->getRawOriginal();
         $logbook->update($data);
+
+        $removed = $logbook->attachments()->whereIn('id', (array) $request->input('remove_attachments', []))->get();
+        $removed->each->delete();
+        $added = $this->saveAttachments($request, $logbook);
+
+        // History: what changed, and which files came and went.
+        $changes = LogbookEvent::diff($before, $data);
+        $fileNote = collect([
+            $added ? 'Added '.implode(', ', $added) : null,
+            $removed->isNotEmpty() ? 'Removed '.$removed->pluck('original_name')->implode(', ') : null,
+        ])->filter()->implode('. ');
+        if ($resubmitted || $changes || $fileNote) {
+            $logbook->record($resubmitted ? 'resubmitted' : 'edited', $request->user(), $changes, $fileNote ?: null);
+        }
 
         if ($resubmitted) {
             $this->notifySupervisor($logbook, 'resubmitted', "{$logbook->student->name} fixed and resent week {$logbook->week_no}.");
@@ -151,6 +210,7 @@ class LogbookController extends Controller
                 'reviewed_at' => null,
             ]);
 
+            $logbook->record('sent_back', $request->user(), note: $data['supervisor_comment']);
             $student->notify(new LogbookActivity($logbook, 'revision', "Week {$logbook->week_no} was sent back. Please read the comment and fix it."));
 
             return redirect()->route('logbooks.show', $logbook)
@@ -165,6 +225,7 @@ class LogbookController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        $logbook->record('approved', $request->user(), note: $data['supervisor_comment']);
         $student->notify(new LogbookActivity($logbook, 'approved', "Week {$logbook->week_no} was approved and signed."));
 
         return redirect()->route('logbooks.show', $logbook)
@@ -180,14 +241,54 @@ class LogbookController extends Controller
     {
         $user = $request->user();
 
-        $student = $user->isSupervisor()
-            ? $user->students()->findOrFail($request->query('student'))
-            : $user;
+        $student = match (true) {
+            $user->isCoordinator() => User::query()->where('role', User::ROLE_STUDENT)->findOrFail($request->query('student')),
+            $user->isSupervisor() => $user->students()->findOrFail($request->query('student')),
+            default => $user,
+        };
+
+        $semester = Semester::find($request->query('semester')) ?? Semester::current();
 
         return view('logbooks.report', [
             'student' => $student->load('supervisor'),
-            'logbooks' => $student->logbooks()->orderBy('week_no')->get()->keyBy('week_no'),
+            'semester' => $semester,
+            'project' => $student->project($semester),
+            'logbooks' => $student->logbooks()->inSemester($semester)->with(['attachments', 'semester'])->orderBy('week_no')->get()->keyBy('week_no'),
         ]);
+    }
+
+    /** Download an attachment; anyone who may view the entry may download its files. */
+    public function attachment(Logbook $logbook, LogbookAttachment $attachment): StreamedResponse
+    {
+        Gate::authorize('view', $logbook);
+        abort_unless($attachment->logbook_id === $logbook->id, 404);
+
+        return Storage::disk('local')->download($attachment->path, $attachment->original_name);
+    }
+
+    /** Store uploaded evidence files on the private disk, under the student's folder. */
+    /** @return list<string> names of the files saved */
+    private function saveAttachments(Request $request, Logbook $logbook): array
+    {
+        $names = [];
+        foreach ((array) $request->file('attachments', []) as $file) {
+            $names[] = mb_substr($file->getClientOriginalName(), 0, 255);
+            $logbook->attachments()->create([
+                'original_name' => mb_substr($file->getClientOriginalName(), 0, 255),
+                'path' => $file->store("attachments/{$logbook->student_id}/{$logbook->id}", 'local'),
+                'mime' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+        }
+
+        return $names;
+    }
+
+    private function noSemester(): RedirectResponse
+    {
+        return redirect()->route('logbooks.index')
+            ->with('success_title', 'No semester open yet')
+            ->with('success', 'Your FYP coordinator has not opened this semester yet. You can write entries once they do.');
     }
 
     private function notifySupervisor(Logbook $logbook, string $kind, string $message): void

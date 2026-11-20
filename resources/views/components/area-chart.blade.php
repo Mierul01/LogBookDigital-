@@ -58,7 +58,7 @@
                     <div class="chart-tip left-1/2 group-hover:opacity-100" style="top: calc({{ $topY }}% - 10px)">
                         <p class="font-semibold">{{ $label }}</p>
                         @foreach ($series as $s)
-                            <p class="flex items-center gap-1.5 text-slate-300"><span class="h-2 w-2 rounded-full" style="background: {{ $s['color'] }}"></span>{{ $s['label'] }}: <span class="font-semibold text-white">{{ $s['values'][$i] }}</span></p>
+                            <p class="flex items-center gap-1.5 text-slate-300"><span class="h-2 w-2 rounded-full" style="background: {{ $s['color'] }}"></span>{{ __($s['label']) }}: <span class="font-semibold text-white">{{ $s['values'][$i] }}</span></p>
                         @endforeach
                     </div>
                 </div>
