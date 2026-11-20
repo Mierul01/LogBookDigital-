@@ -6,6 +6,9 @@
 @import 'sweetalert2/dist/sweetalert2.css' layer(vendor);
 @import 'tailwindcss';
 
+/* dark: utilities (e.g. Laravel's pagination) follow the app's dark theme class. */
+@custom-variant dark (&:where(.theme-dark, .theme-dark *));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
@@ -144,7 +147,7 @@
     }
 
     .nav-link {
-        @apply relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-brand-100/70 transition duration-200 ease-(--ease-out-soft) hover:translate-x-1 hover:bg-white/5 hover:text-white;
+        @apply relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-300 transition duration-200 ease-(--ease-out-soft) hover:translate-x-1 hover:bg-white/5 hover:text-white;
     }
 
     .nav-link.active {
@@ -552,5 +555,241 @@
     /* Chart point tooltip */
     .chart-tip {
         @apply pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border border-white/10 bg-ink-800 px-2.5 py-1.5 text-xs whitespace-nowrap text-white opacity-0 shadow-lg transition-opacity;
+    }
+}
+/* ---------------------------------------------------------------------------
+ * Dark theme for every page (body.theme-dark).
+ * Pages are written with light utility classes; here the neutral and tint colours are
+ * swapped for dark navy ones, so the same markup reads well on a dark background.
+ * Put .keep-light on anything that must stay white (UKM logo tile, white buttons).
+ * ------------------------------------------------------------------------- */
+.theme-dark {
+    color-scheme: dark;
+
+    /* Neutrals, inverted: 50-300 become navy surfaces and lines, 400-900 become light text. */
+    --color-zinc-50: #0f1c38;
+    --color-zinc-100: #15264a;
+    --color-zinc-200: #213760;
+    --color-zinc-300: #2d4675;
+    --color-zinc-400: #8392b3;
+    --color-zinc-500: #9eabc8;
+    --color-zinc-600: #b8c3dc;
+    --color-zinc-700: #d2daea;
+    --color-zinc-800: #e5eaf4;
+    --color-zinc-900: #f5f7fc;
+
+    /* Light tints become see-through glows; dark text shades become light ones. */
+    --color-brand-50: rgb(47 102 181 / 0.16);
+    --color-brand-100: rgb(47 102 181 / 0.26);
+    --color-brand-200: rgb(85 131 201 / 0.4);
+    --color-emerald-50: rgb(16 185 129 / 0.13);
+    --color-emerald-100: rgb(16 185 129 / 0.2);
+    --color-emerald-200: rgb(16 185 129 / 0.3);
+    --color-emerald-700: #6ee7b7;
+    --color-emerald-800: #a7f3d0;
+    --color-amber-50: rgb(245 180 26 / 0.12);
+    --color-amber-100: rgb(245 180 26 / 0.2);
+    --color-amber-200: rgb(245 180 26 / 0.3);
+    --color-amber-700: #fcd34d;
+    --color-amber-800: #fde68a;
+    --color-orange-50: rgb(249 115 22 / 0.13);
+    --color-orange-100: rgb(249 115 22 / 0.2);
+    --color-orange-200: rgb(249 115 22 / 0.32);
+    --color-orange-700: #fdba74;
+    --color-orange-800: #fed7aa;
+    --color-orange-900: #ffedd5;
+    --color-sky-50: rgb(14 165 233 / 0.13);
+    --color-sky-100: rgb(14 165 233 / 0.2);
+    --color-sky-200: rgb(14 165 233 / 0.3);
+    --color-sky-700: #7dd3fc;
+    --color-red-50: rgb(239 68 68 / 0.12);
+    --color-red-100: rgb(239 68 68 / 0.2);
+    --color-red-200: rgb(239 68 68 / 0.32);
+}
+
+@layer utilities {
+    /* White surfaces become navy cards. */
+    .theme-dark .bg-white:not(.keep-light) { background-color: var(--color-ink-900); }
+    .theme-dark .hover\:bg-white:not(.keep-light):hover,
+    .theme-dark .focus\:bg-white:not(.keep-light):focus { background-color: var(--color-ink-800); }
+    .theme-dark .to-white { --tw-gradient-to: var(--color-ink-900); }
+    .theme-dark .from-white { --tw-gradient-from: var(--color-ink-900); }
+    .theme-dark .ring-white:not(.keep-light) { --tw-ring-color: var(--color-ink-900); }
+
+    /* Blue and coloured text, made bright enough to read on navy. */
+    .theme-dark .text-brand-600:not(.keep-light *),
+    .theme-dark .text-brand-700:not(.keep-light *),
+    .theme-dark .text-brand-800:not(.keep-light *),
+    .theme-dark .hover\:text-brand-600:hover,
+    .theme-dark .hover\:text-brand-700:hover,
+    .theme-dark .hover\:text-brand-800:hover,
+    .theme-dark .group:hover .group-hover\:text-brand-600 { color: var(--color-brand-300); }
+    .theme-dark .text-emerald-600 { color: #34d399; }
+    .theme-dark .text-amber-600 { color: #fbbf24; }
+    .theme-dark .text-orange-600 { color: #fb923c; }
+    .theme-dark .text-sky-600 { color: #38bdf8; }
+    .theme-dark .text-red-600,
+    .theme-dark .hover\:text-red-600:hover { color: #f87171; }
+
+    /* Signatures are dark ink on a transparent PNG: keep a light pad behind them. */
+    .theme-dark img[alt*='signature' i] {
+        background-color: #f1f5f9;
+        border-radius: 0.5rem;
+        padding: 0.25rem;
+    }
+
+    .theme-dark [data-signature-pad] canvas {
+        background-color: #f1f5f9;
+        border-color: var(--color-zinc-300);
+    }
+}
+
+@layer components {
+    .theme-dark .card {
+        @apply border-white/[0.07] bg-ink-900 shadow-none;
+    }
+
+    .theme-dark .card-hover {
+        @apply hover:border-white/15 hover:shadow-[0_12px_32px_-12px_rgba(0,0,0,0.5)];
+    }
+
+    .theme-dark .input {
+        @apply hover:bg-ink-800 focus:bg-ink-800 focus:shadow-[0_0_0_4px_rgba(85,131,201,0.25)];
+    }
+
+    .theme-dark .btn-secondary {
+        @apply border-white/15 bg-white/5 text-slate-200 hover:border-white/25 hover:bg-white/10;
+    }
+
+    .theme-dark .btn-danger {
+        @apply bg-red-500/10 text-red-300 ring-red-400/30 hover:bg-red-500/20 hover:ring-red-400/50;
+    }
+
+    .theme-dark .icon-btn {
+        @apply text-slate-300 hover:bg-white/10 hover:text-white;
+    }
+
+    .theme-dark .table-head {
+        @apply bg-white/[0.03] text-slate-400;
+    }
+
+    .theme-dark .table-row {
+        @apply bg-transparent even:bg-white/[0.025] hover:bg-brand-500/10;
+    }
+
+    /* Dropdowns, date picker and popups */
+    .theme-dark .ts-wrapper.single .ts-control:hover,
+    .theme-dark .ts-wrapper.single.focus .ts-control {
+        @apply bg-ink-800;
+    }
+
+    .theme-dark .ts-wrapper .ts-control,
+    .theme-dark .ts-wrapper .ts-control input {
+        @apply text-slate-100;
+    }
+
+    .theme-dark .ts-dropdown,
+    .theme-dark .flatpickr-calendar {
+        @apply border-white/10 bg-ink-800 text-slate-100 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.6)];
+    }
+
+    .theme-dark .ts-dropdown .option {
+        @apply text-slate-200;
+    }
+
+    .theme-dark .ts-dropdown .option.active {
+        @apply bg-brand-500/20 text-white;
+    }
+
+    .theme-dark .flatpickr-months .flatpickr-month,
+    .theme-dark .flatpickr-current-month,
+    .theme-dark .flatpickr-current-month .flatpickr-monthDropdown-months,
+    .theme-dark .flatpickr-current-month input.cur-year {
+        @apply bg-transparent text-white;
+    }
+
+    .theme-dark .flatpickr-current-month .flatpickr-monthDropdown-months option {
+        @apply bg-ink-800;
+    }
+
+    .theme-dark .flatpickr-day {
+        @apply text-slate-200;
+    }
+
+    .theme-dark .flatpickr-day.today {
+        @apply bg-ukm-gold/15 text-white;
+    }
+
+    .theme-dark .flatpickr-day.prevMonthDay,
+    .theme-dark .flatpickr-day.nextMonthDay,
+    .theme-dark .flatpickr-day.flatpickr-disabled {
+        @apply text-slate-600;
+    }
+
+    .theme-dark .flatpickr-months .flatpickr-prev-month,
+    .theme-dark .flatpickr-months .flatpickr-next-month {
+        @apply text-slate-300;
+    }
+
+    .theme-dark .flatpickr-footer {
+        @apply border-white/10;
+    }
+
+    .theme-dark .swal-card {
+        @apply border-white/10 bg-ink-800 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)];
+    }
+
+    .theme-dark .swal-title {
+        @apply text-white;
+    }
+
+    .theme-dark .swal-text {
+        @apply text-slate-300;
+    }
+
+    .theme-dark .swal-toast {
+        @apply border-white/10 bg-ink-800/95;
+    }
+
+    .theme-dark .swal-toast-title {
+        @apply text-white;
+    }
+
+    .theme-dark div:where(.swal2-icon).swal2-success .swal2-success-circular-line-left,
+    .theme-dark div:where(.swal2-icon).swal2-success .swal2-success-circular-line-right,
+    .theme-dark div:where(.swal2-icon).swal2-success .swal2-success-fix {
+        background-color: var(--color-ink-800) !important;
+    }
+}
+
+@layer components {
+    .theme-dark ::selection {
+        @apply bg-brand-500/40 text-white;
+    }
+
+    .theme-dark .flatpickr-day:hover,
+    .theme-dark .flatpickr-day:focus {
+        @apply bg-brand-500/25 text-white;
+    }
+}
+
+@layer components {
+    .theme-dark .flatpickr-day.selected,
+    .theme-dark .flatpickr-day.selected:hover,
+    .theme-dark .flatpickr-day.selected.today {
+        @apply bg-brand-500 text-white;
+    }
+}
+
+/* Scrollable menus stay scrollable but don't show a scrollbar. */
+@layer utilities {
+    .ts-dropdown .ts-dropdown-content,
+    details[data-dropdown] ul {
+        scrollbar-width: none;
+    }
+
+    .ts-dropdown .ts-dropdown-content::-webkit-scrollbar,
+    details[data-dropdown] ul::-webkit-scrollbar {
+        display: none;
     }
 }

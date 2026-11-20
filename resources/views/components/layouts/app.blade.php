@@ -1,4 +1,4 @@
-@props(['title' => 'Dashboard', 'subtitle' => null, 'dark' => false])
+@props(['title' => 'Dashboard', 'subtitle' => null, 'dark' => true])
 
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['h-full', 'bg-ink-950' => $dark, 'bg-zinc-50' => ! $dark])>
@@ -25,12 +25,12 @@
     <div class="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-ukm-gold/10 to-transparent"></div>
 
     <a href="{{ route('dashboard') }}" class="group relative flex items-center gap-3.5 px-6 pt-8 pb-7">
-        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white p-1.5 shadow-lg shadow-black/20 ring-1 ring-white/10 transition duration-300 group-hover:scale-105 group-hover:rotate-[-3deg]">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center keep-light rounded-2xl bg-white p-1.5 shadow-lg shadow-black/20 ring-1 ring-white/10 transition duration-300 group-hover:scale-105 group-hover:rotate-[-3deg]">
             <img src="{{ asset('images/ukm.png') }}" alt="UKM" class="h-full w-full object-contain">
         </span>
         <span class="min-w-0 leading-tight">
             <span class="block text-[15px] font-bold tracking-tight text-white">Digital LogBook<span class="text-ukm-gold">+</span></span>
-            <span class="mt-1 block text-xs text-brand-200/70">Universiti Kebangsaan Malaysia</span>
+            <span class="mt-1 block text-xs text-slate-400">Universiti Kebangsaan Malaysia</span>
         </span>
     </a>
 
@@ -75,7 +75,7 @@
             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-ukm-gold to-amber-500 text-sm font-bold text-brand-950">{{ $user->initials() }}</span>
             <span class="min-w-0 flex-1">
                 <span class="block truncate text-sm font-semibold text-white">{{ $user->name }}</span>
-                <span class="block truncate text-xs text-brand-200/70">{{ ucfirst($user->role) }} · {{ $user->username }}</span>
+                <span class="block truncate text-xs text-slate-400">{{ ucfirst($user->role) }} · {{ $user->username }}</span>
             </span>
             <x-icon name="chevron-right" class="h-4 w-4 text-zinc-500" />
         </a>
