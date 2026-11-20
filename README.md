@@ -2,9 +2,14 @@
 
 A weekly project logbook for UKM students and their supervisors, built with **Laravel 12**, Blade, and Tailwind CSS 4.
 
-- **Students** write one logbook entry per week: progress, current status, problems, and next week's task.
-- **Supervisors** register their students, then read each entry, add a comment, and sign it on a signature pad.
-- Once an entry is signed it's locked, so the student can no longer edit it.
+![Student dashboard](docs/images/dashboard.png)
+
+- **Students** write one logbook entry per week (progress, current status, problems, and next week's task) and sign it.
+- **Supervisors** register their students, then read each entry and either **approve and sign** it or **send it back** with a comment for the student to fix and resend.
+- Once an entry is signed it's locked, so the student can no longer edit or delete it.
+- A bell in the top bar tells students and supervisors when an entry is submitted, approved or sent back.
+- The **full logbook** shows all 14 weeks with both signatures on one page, ready to print or save as PDF.
+- Light and dark mode, switched from the top bar.
 
 ## Running it locally
 
