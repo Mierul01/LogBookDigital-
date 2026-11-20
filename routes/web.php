@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('logbooks/report', [LogbookController::class, 'report'])->name('logbooks.report');
     Route::resource('logbooks', LogbookController::class);
+    Route::get('logbooks/{logbook}/attachments/{attachment}', [LogbookController::class, 'attachment'])->name('logbooks.attachment');
     Route::put('logbooks/{logbook}/review', [LogbookController::class, 'review'])->name('logbooks.review');
 
     Route::get('notifications/{id}', [NotificationController::class, 'open'])->name('notifications.open');

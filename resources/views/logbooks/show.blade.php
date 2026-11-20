@@ -60,6 +60,25 @@
                 @endforeach
             </dl>
 
+            @if ($logbook->attachments->isNotEmpty())
+                <div class="border-t border-zinc-100 px-6 py-4">
+                    <p class="text-sm font-semibold text-zinc-900">Lampiran <span class="font-normal text-zinc-400">· Attachments</span></p>
+                    <ul class="mt-2 grid gap-2 sm:grid-cols-2">
+                        @foreach ($logbook->attachments as $file)
+                            <li>
+                                <a href="{{ route('logbooks.attachment', [$logbook, $file]) }}" class="flex items-center gap-3 rounded-xl border border-zinc-200 px-3 py-2 text-sm transition hover:border-brand-400 hover:bg-brand-50">
+                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"><x-icon :name="$file->isImage() ? 'eye' : 'document'" class="h-4 w-4" /></span>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate font-medium text-zinc-900">{{ $file->original_name }}</span>
+                                        <span class="block text-xs text-zinc-500">{{ $file->humanSize() }}</span>
+                                    </span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             {{-- Sign-off block, like the paper logbook --}}
             <div class="grid border-t border-zinc-100 sm:grid-cols-2 sm:divide-x sm:divide-zinc-100">
                 <div class="px-6 py-5">

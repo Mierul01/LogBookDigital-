@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LogbookRequest;
 use App\Http\Requests\ReviewLogbookRequest;
 use App\Models\Logbook;
+use App\Models\LogbookAttachment;
 use App\Models\Semester;
 use App\Models\User;
 use App\Notifications\LogbookActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\View\View;
 
 class LogbookController extends Controller
@@ -103,11 +106,13 @@ class LogbookController extends Controller
         }
 
         $logbook = $request->user()->logbooks()->create([
-            ...$request->validated(),
+            ...$request->safe()->except(['attachments', 'remove_attachments']),
             'semester_id' => Semester::current()?->id,
             'status' => Logbook::STATUS_PENDING,
             'submitted_at' => now(),
         ]);
+
+        $this->saveAttachments($request, $logbook);
 
         $this->notifySupervisor($logbook, 'submitted', "{$logbook->student->name} submitted week {$logbook->week_no}.");
 
@@ -120,7 +125,7 @@ class LogbookController extends Controller
     {
         Gate::authorize('view', $logbook);
 
-        return view('logbooks.show', ['logbook' => $logbook->load('student.supervisor')]);
+        return view('logbooks.show', ['logbook' => $logbook->load(['student.supervisor', 'attachments'])]);
     }
 
     public function edit(Request $request, Logbook $logbook): View
@@ -137,7 +142,7 @@ class LogbookController extends Controller
     {
         Gate::authorize('update', $logbook);
 
-        $data = $request->validated();
+        $data = $request->safe()->except(['attachments', 'remove_attachments']);
         if (blank($data['student_signature'] ?? null)) {
             unset($data['student_signature']);
         }
@@ -149,6 +154,9 @@ class LogbookController extends Controller
         }
 
         $logbook->update($data);
+
+        $logbook->attachments()->whereIn('id', (array) $request->input('remove_attachments', []))->get()->each->delete();
+        $this->saveAttachments($request, $logbook);
 
         if ($resubmitted) {
             $this->notifySupervisor($logbook, 'resubmitted', "{$logbook->student->name} fixed and resent week {$logbook->week_no}.");
@@ -225,8 +233,30 @@ class LogbookController extends Controller
             'student' => $student->load('supervisor'),
             'semester' => $semester,
             'project' => $student->project($semester),
-            'logbooks' => $student->logbooks()->inSemester($semester)->orderBy('week_no')->get()->keyBy('week_no'),
+            'logbooks' => $student->logbooks()->inSemester($semester)->with(['attachments', 'semester'])->orderBy('week_no')->get()->keyBy('week_no'),
         ]);
+    }
+
+    /** Download an attachment; anyone who may view the entry may download its files. */
+    public function attachment(Logbook $logbook, LogbookAttachment $attachment): StreamedResponse
+    {
+        Gate::authorize('view', $logbook);
+        abort_unless($attachment->logbook_id === $logbook->id, 404);
+
+        return Storage::disk('local')->download($attachment->path, $attachment->original_name);
+    }
+
+    /** Store uploaded evidence files on the private disk, under the student's folder. */
+    private function saveAttachments(Request $request, Logbook $logbook): void
+    {
+        foreach ((array) $request->file('attachments', []) as $file) {
+            $logbook->attachments()->create([
+                'original_name' => mb_substr($file->getClientOriginalName(), 0, 255),
+                'path' => $file->store("attachments/{$logbook->student_id}/{$logbook->id}", 'local'),
+                'mime' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+        }
     }
 
     private function noSemester(): RedirectResponse

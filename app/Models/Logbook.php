@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Logbook extends Model
 {
@@ -63,6 +64,17 @@ class Logbook extends Model
             'submitted_at' => 'datetime',
             'reviewed_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Delete attachment files along with the entry.
+        static::deleting(fn (self $logbook) => $logbook->attachments->each->delete());
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(LogbookAttachment::class);
     }
 
     public function student(): BelongsTo

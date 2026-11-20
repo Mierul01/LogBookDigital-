@@ -92,6 +92,10 @@
                             @endforeach
                         </dl>
 
+                        @if ($entry->attachments->isNotEmpty())
+                            <p class="mt-2 text-xs text-zinc-500"><span class="font-semibold">Lampiran:</span> {{ $entry->attachments->pluck('original_name')->implode(', ') }}</p>
+                        @endif
+
                         @if ($entry->supervisor_comment)
                             <div class="mt-3 rounded-lg bg-zinc-50 px-3 py-2 text-sm">
                                 <span class="text-xs font-semibold text-zinc-500">Komen Penyelia:</span>

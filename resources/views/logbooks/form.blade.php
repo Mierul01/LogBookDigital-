@@ -10,7 +10,7 @@
         <a href="{{ route('logbooks.index') }}" class="btn btn-secondary"><x-icon name="list" class="h-4 w-4" /> <span class="hidden sm:inline">View all entries</span></a>
     </x-slot:actions>
 
-    <form method="POST" action="{{ $editing ? route('logbooks.update', $logbook) : route('logbooks.store') }}" class="grid gap-5 lg:grid-cols-3"
+    <form method="POST" action="{{ $editing ? route('logbooks.update', $logbook) : route('logbooks.store') }}" enctype="multipart/form-data" class="grid gap-5 lg:grid-cols-3"
           @unless ($editing) data-confirm="Your supervisor will be able to review it. You can still edit it until it is signed." data-confirm-title="Submit this entry?" data-confirm-button="Yes, submit" @endunless
           @if ($editing && $logbook->needsRevision()) data-confirm="Your supervisor will review week {{ $logbook->week_no }} again." data-confirm-title="Send the fixed entry?" data-confirm-button="Yes, send" @endif>
         @csrf
@@ -106,6 +106,29 @@
                         <textarea id="next_week_task" name="next_week_task" rows="3" required placeholder="What will you work on next week?"
                                   @class(['input', 'input-error' => $errors->has('next_week_task')])>{{ old('next_week_task', $logbook->next_week_task) }}</textarea>
                     </x-field>
+                </div>
+                {{-- Evidence files --}}
+                <div class="border-t border-zinc-100 px-6 py-5">
+                    <p class="label">Lampiran (Attachments) <span class="font-normal text-zinc-400">· optional</span></p>
+                    @if ($editing && $logbook->attachments->isNotEmpty())
+                        <ul class="mb-3 divide-y divide-zinc-100 rounded-xl border border-zinc-200">
+                            @foreach ($logbook->attachments as $file)
+                                <li class="flex items-center gap-3 px-3 py-2 text-sm">
+                                    <x-icon name="document" class="h-4 w-4 shrink-0 text-zinc-400" />
+                                    <a href="{{ route('logbooks.attachment', [$logbook, $file]) }}" class="min-w-0 flex-1 truncate text-zinc-700 hover:text-brand-600">{{ $file->original_name }}</a>
+                                    <span class="text-xs text-zinc-400">{{ $file->humanSize() }}</span>
+                                    <label class="flex items-center gap-1.5 text-xs text-red-600"><input type="checkbox" name="remove_attachments[]" value="{{ $file->id }}" class="rounded border-zinc-300 text-red-600 focus:ring-red-500"> Remove</label>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                    <input type="file" name="attachments[]" multiple accept=".{{ implode(',.', App\Models\LogbookAttachment::EXTENSIONS) }}"
+                           class="block w-full rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-4 text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border-0 file:bg-brand-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-brand-400">
+                    @if ($errors->has('attachments') || $errors->has('attachments.*'))
+                        <p class="mt-1.5 text-sm text-red-600">{{ $errors->first('attachments') ?: collect($errors->get('attachments.*'))->flatten()->first() }}</p>
+                    @else
+                        <p class="mt-1.5 text-xs text-zinc-500">Screenshots, reports or slides as evidence. Up to {{ App\Models\LogbookAttachment::MAX_FILES }} files, 5 MB each (PDF, images, Word, PowerPoint, Excel).</p>
+                    @endif
                 </div>
                 <div class="border-t border-zinc-100 px-6 py-5">
                     @if ($editing && $logbook->student_signature)

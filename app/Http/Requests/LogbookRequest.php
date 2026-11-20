@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Logbook;
+use App\Models\LogbookAttachment;
 use App\Models\Semester;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -44,6 +45,11 @@ class LogbookRequest extends FormRequest
             'next_week_task' => ['required', 'string', 'max:5000'],
             // Drawn on a canvas and posted as a PNG data URL. Optional when editing: blank keeps the old one.
             'student_signature' => [$logbook ? 'nullable' : 'required', 'string', 'starts_with:data:image/png;base64,', 'max:500000'],
+            // Evidence files. The total per entry (kept + new) is checked in after().
+            'attachments' => ['nullable', 'array', 'max:'.LogbookAttachment::MAX_FILES],
+            'attachments.*' => ['file', 'max:'.LogbookAttachment::MAX_KB, 'mimes:'.implode(',', LogbookAttachment::EXTENSIONS)],
+            'remove_attachments' => ['nullable', 'array'],
+            'remove_attachments.*' => ['integer'],
         ];
     }
 
@@ -56,10 +62,24 @@ class LogbookRequest extends FormRequest
         ];
     }
 
+    /** Kept files plus new files may not go over the limit. */
+    public function after(): array
+    {
+        return [function ($validator) {
+            $logbook = $this->route('logbook');
+            $kept = $logbook ? $logbook->attachments()->whereNotIn('id', (array) $this->input('remove_attachments', []))->count() : 0;
+
+            if ($kept + count((array) $this->file('attachments', [])) > LogbookAttachment::MAX_FILES) {
+                $validator->errors()->add('attachments', 'An entry can have at most '.LogbookAttachment::MAX_FILES.' files. Remove some first.');
+            }
+        }];
+    }
+
     public function attributes(): array
     {
         return [
             'week_no' => 'week number',
+            'attachments.*' => 'file',
             'entry_date' => 'date',
             'meeting_mode' => 'meeting type',
             'meeting_time' => 'meeting time',

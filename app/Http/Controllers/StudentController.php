@@ -80,6 +80,7 @@ class StudentController extends Controller
     {
         $this->ensureSupervises($request, $student);
 
+        \Illuminate\Support\Facades\Storage::disk('local')->deleteDirectory("attachments/{$student->id}");
         $student->delete();
 
         return redirect()->route('students.index')->with('success', "{$student->name} and their logbook entries were removed.")->with('success_title', 'Student removed');

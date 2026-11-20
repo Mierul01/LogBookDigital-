@@ -90,6 +90,7 @@ class UserController extends Controller
         abort_if($user->is($request->user()), 422, 'You cannot delete your own account.');
 
         // Students keep their logbook only while their account exists; supervisors' students become unassigned.
+        \Illuminate\Support\Facades\Storage::disk('local')->deleteDirectory("attachments/{$user->id}");
         $user->delete();
 
         return redirect()->route('admin.users.index')
