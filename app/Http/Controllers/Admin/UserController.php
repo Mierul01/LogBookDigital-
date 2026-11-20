@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserRequest;
 use App\Models\Logbook;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,11 +22,14 @@ class UserController extends Controller
         $role = in_array($request->query('role'), User::ROLES, true) ? $request->query('role') : null;
         $supervisorId = $request->query('supervisor');
 
+        $semester = Semester::current();
+
         $users = User::query()
-            ->with('supervisor:id,name')
+            ->with(['supervisor:id,name', 'projects' => fn ($q) => $q->where('semester_id', $semester?->id)])
+            // Logbook progress for the current semester.
             ->withCount([
-                'logbooks',
-                'logbooks as approved_count' => fn ($q) => $q->where('status', Logbook::STATUS_APPROVED),
+                'logbooks' => fn ($q) => $q->inSemester($semester),
+                'logbooks as approved_count' => fn ($q) => $q->inSemester($semester)->where('status', Logbook::STATUS_APPROVED),
                 'students',
             ])
             ->when($role, fn ($q) => $q->where('role', $role))

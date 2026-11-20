@@ -63,6 +63,9 @@
                                     <div class="min-w-0">
                                         <p class="truncate font-semibold text-zinc-900">{{ $account->name }} @if ($account->is(auth()->user()))<span class="text-xs font-normal text-zinc-400">(you)</span>@endif</p>
                                         <p class="text-xs text-zinc-500">{{ $account->username }}</p>
+                                        @if ($account->projects->first())
+                                            <p class="max-w-64 truncate text-xs text-zinc-400" title="{{ $account->projects->first()->title }}">{{ $account->projects->first()->title }}</p>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Logbook;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -14,13 +15,14 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $weeks = range(1, Logbook::MAX_WEEKS);
+        $semester = Semester::current();
 
         // Every query below is scoped to the student's own entries, or the supervisor's students' entries.
         // The coordinator sees the whole faculty.
         $studentQuery = fn () => User::query()->where('role', User::ROLE_STUDENT)
             ->when($user->isSupervisor(), fn ($q) => $q->where('supervisor_id', $user->id));
 
-        $scope = fn (): Builder => Logbook::query()->when(
+        $scope = fn (): Builder => Logbook::query()->inSemester($semester)->when(
             $user->isStaff(),
             fn ($q) => $q->whereIn('student_id', $studentQuery()->select('id')),
             fn ($q) => $q->where('student_id', $user->id),
@@ -84,13 +86,15 @@ class DashboardController extends Controller
             'recent' => $scope()->with('student')->latest('updated_at')->latest('id')->take(5)->get(),
             'activities' => $user->notifications()->latest()->take(5)->get(),
             // Student: entries keyed by week number for the timeline.
-            'timeline' => $user->isStudent() ? $user->logbooks()->get(['id', 'week_no', 'status'])->keyBy('week_no') : collect(),
+            'timeline' => $user->isStudent() ? $user->logbooks()->inSemester($semester)->get(['id', 'week_no', 'status'])->keyBy('week_no') : collect(),
+            'semester' => $semester,
+            'project' => $user->isStudent() ? $user->project($semester) : null,
             // Supervisor: students with the most approved weeks.
             'topStudents' => $user->isStaff()
                 ? $studentQuery()
                     ->withCount([
-                        'logbooks',
-                        'logbooks as reviewed_count' => fn ($q) => $q->where('status', Logbook::STATUS_APPROVED),
+                        'logbooks' => fn ($q) => $q->inSemester($semester),
+                        'logbooks as reviewed_count' => fn ($q) => $q->inSemester($semester)->where('status', Logbook::STATUS_APPROVED),
                     ])
                     ->orderByDesc('reviewed_count')
                     ->orderBy('name')

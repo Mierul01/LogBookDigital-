@@ -31,6 +31,9 @@
                                     <div>
                                         <p class="font-semibold text-zinc-900">{{ $student->name }}</p>
                                         <p class="text-xs text-zinc-500">{{ $student->username }}</p>
+                                        @if ($student->projects->first())
+                                            <p class="max-w-64 truncate text-xs text-zinc-400" title="{{ $student->projects->first()->title }}">{{ $student->projects->first()->title }}</p>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

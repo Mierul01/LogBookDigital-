@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LogbookRequest;
 use App\Http\Requests\ReviewLogbookRequest;
 use App\Models\Logbook;
+use App\Models\Semester;
 use App\Models\User;
 use App\Notifications\LogbookActivity;
 use Illuminate\Http\RedirectResponse;
@@ -28,6 +29,11 @@ class LogbookController extends Controller
 
         $supervisorId = $user->isCoordinator() ? $request->query('supervisor') : null;
 
+        // Current semester unless another one (or "all") is picked.
+        $semesters = Semester::query()->orderByDesc('starts_on')->get(['id', 'name', 'is_current']);
+        $semesterParam = $request->query('semester');
+        $semester = $semesterParam === 'all' ? null : ($semesters->firstWhere('id', (int) $semesterParam) ?? $semesters->firstWhere('is_current', true));
+
         $query = match (true) {
             $user->isCoordinator() => Logbook::query()->select('logbooks.*'),
             $user->isSupervisor() => $user->supervisedLogbooks(),
@@ -35,7 +41,8 @@ class LogbookController extends Controller
         };
 
         $logbooks = $query
-            ->with('student')
+            ->with(['student', 'semester'])
+            ->inSemester($semester)
             ->when(in_array($status, [Logbook::STATUS_PENDING, Logbook::STATUS_REVISION, Logbook::STATUS_APPROVED], true),
                 fn ($q) => $q->where('logbooks.status', $status))
             ->when($user->isStaff() && $studentId, fn ($q) => $q->where('logbooks.student_id', $studentId))
@@ -59,7 +66,9 @@ class LogbookController extends Controller
                 default => collect(),
             },
             'supervisors' => $user->isCoordinator() ? User::query()->where('role', User::ROLE_SUPERVISOR)->orderBy('name')->get(['id', 'name']) : collect(),
-            'filters' => ['status' => $status, 'student' => $studentId, 'supervisor' => $supervisorId, 'q' => $search],
+            'semesters' => $semesters,
+            'semester' => $semester,
+            'filters' => ['status' => $status, 'student' => $studentId, 'supervisor' => $supervisorId, 'q' => $search, 'semester' => $semesterParam],
         ]);
     }
 
@@ -69,6 +78,10 @@ class LogbookController extends Controller
 
         $user = $request->user();
 
+        if (! Semester::current()) {
+            return $this->noSemester();
+        }
+
         if (! $user->nextLogbookWeek()) {
             return redirect()->route('logbooks.index')
                 ->with('success_title', 'All weeks logged')
@@ -77,7 +90,7 @@ class LogbookController extends Controller
 
         return view('logbooks.form', [
             'logbook' => new Logbook(['week_no' => $user->nextLogbookWeek(), 'entry_date' => now()]),
-            'usedWeeks' => $user->logbooks()->pluck('week_no')->all(),
+            'usedWeeks' => $user->logbooks()->inSemester(Semester::current())->pluck('week_no')->all(),
         ]);
     }
 
@@ -85,8 +98,13 @@ class LogbookController extends Controller
     {
         Gate::authorize('create', Logbook::class);
 
+        if (! Semester::current()) {
+            return $this->noSemester();
+        }
+
         $logbook = $request->user()->logbooks()->create([
             ...$request->validated(),
+            'semester_id' => Semester::current()?->id,
             'status' => Logbook::STATUS_PENDING,
             'submitted_at' => now(),
         ]);
@@ -111,7 +129,7 @@ class LogbookController extends Controller
 
         return view('logbooks.form', [
             'logbook' => $logbook,
-            'usedWeeks' => $request->user()->logbooks()->whereKeyNot($logbook->id)->pluck('week_no')->all(),
+            'usedWeeks' => $request->user()->logbooks()->where('semester_id', $logbook->semester_id)->whereKeyNot($logbook->id)->pluck('week_no')->all(),
         ]);
     }
 
@@ -201,10 +219,21 @@ class LogbookController extends Controller
             default => $user,
         };
 
+        $semester = Semester::find($request->query('semester')) ?? Semester::current();
+
         return view('logbooks.report', [
             'student' => $student->load('supervisor'),
-            'logbooks' => $student->logbooks()->orderBy('week_no')->get()->keyBy('week_no'),
+            'semester' => $semester,
+            'project' => $student->project($semester),
+            'logbooks' => $student->logbooks()->inSemester($semester)->orderBy('week_no')->get()->keyBy('week_no'),
         ]);
+    }
+
+    private function noSemester(): RedirectResponse
+    {
+        return redirect()->route('logbooks.index')
+            ->with('success_title', 'No semester open yet')
+            ->with('success', 'Your FYP coordinator has not opened this semester yet. You can write entries once they do.');
     }
 
     private function notifySupervisor(Logbook $logbook, string $kind, string $message): void

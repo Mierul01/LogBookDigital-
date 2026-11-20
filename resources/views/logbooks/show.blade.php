@@ -90,7 +90,10 @@
                     <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-sm font-bold text-white">{{ $logbook->student->initials() }}</span>
                     <div class="min-w-0">
                         <p class="truncate font-semibold">{{ $logbook->student->name }}</p>
-                        <p class="text-sm text-zinc-500">{{ $logbook->student->username }}</p>
+                        <p class="text-sm text-zinc-500">{{ $logbook->student->username }}@if ($logbook->semester) · {{ $logbook->semester->name }}@endif</p>
+                        @if ($project = $logbook->student->project($logbook->semester))
+                            <p class="mt-0.5 text-xs text-zinc-500">{{ $project->stageLabel() }} · {{ $project->title }}</p>
+                        @endif
                     </div>
                 </div>
 

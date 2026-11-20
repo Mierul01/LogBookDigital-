@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SemesterController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
@@ -31,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('profile', [ProfileController::class, 'show'])->name('profile');
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('profile/password', [ProfileController::class, 'password'])->name('profile.password');
+    Route::put('profile/project', [ProfileController::class, 'project'])->middleware('role:student')->name('profile.project');
 
     Route::middleware('role:supervisor')->group(function () {
         Route::resource('students', StudentController::class)->except('show');
@@ -39,5 +41,7 @@ Route::middleware('auth')->group(function () {
     // FYP coordinator: every account in the faculty.
     Route::middleware('role:coordinator')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', UserController::class)->except('show');
+        Route::resource('semesters', SemesterController::class)->except('show');
+        Route::post('semesters/{semester}/current', [SemesterController::class, 'makeCurrent'])->name('semesters.current');
     });
 });

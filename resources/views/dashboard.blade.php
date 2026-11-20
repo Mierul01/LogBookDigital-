@@ -78,8 +78,15 @@
                         </p>
                         <div class="mt-3.5 flex flex-wrap items-center gap-2">
                             <span class="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1 text-xs font-medium text-white ring-1 ring-white/15">
-                                <x-icon name="calendar" class="h-3.5 w-3.5" /> {{ now()->format('j M Y') }}
+                                <x-icon name="calendar" class="h-3.5 w-3.5" /> {{ $semester ? $semester->name.' · '.($semester->currentWeek() ? 'Week '.$semester->currentWeek() : 'not started') : now()->format('j M Y') }}
                             </span>
+                            @if ($user->isStudent())
+                                @if ($project)
+                                    <span class="inline-flex max-w-xs items-center gap-1.5 truncate rounded-lg bg-white/10 px-2.5 py-1 text-xs font-medium text-white ring-1 ring-white/15" title="{{ $project->title }}">{{ $project->stageLabel() }} · {{ $project->title }}</span>
+                                @elseif ($semester)
+                                    <a href="{{ route('profile') }}" class="keep-light inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-brand-800 transition hover:bg-brand-50">Add your project title <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
+                                @endif
+                            @endif
                             <span class="inline-flex items-center gap-1.5 rounded-lg bg-ukm-gold/20 px-2.5 py-1 text-xs font-semibold text-ukm-gold ring-1 ring-ukm-gold/30">
                                 <x-icon name="sparkles" class="h-3.5 w-3.5" /> {{ $isSupervisor ? ($user->isCoordinator() ? 'Coordinator workspace' : 'Supervisor workspace') : 'Final Year Project' }}
                             </span>

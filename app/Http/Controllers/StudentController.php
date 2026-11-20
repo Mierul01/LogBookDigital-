@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StudentRequest;
+use App\Models\Logbook;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,10 +19,14 @@ class StudentController extends Controller
     {
         $search = trim((string) $request->query('q'));
 
+        $semester = Semester::current();
+
         $students = $request->user()->students()
+            ->with(['projects' => fn ($q) => $q->where('semester_id', $semester?->id)])
+            // Progress in the current semester.
             ->withCount([
-                'logbooks',
-                'logbooks as reviewed_count' => fn ($q) => $q->whereNotNull('reviewed_at'),
+                'logbooks' => fn ($q) => $q->inSemester($semester),
+                'logbooks as reviewed_count' => fn ($q) => $q->inSemester($semester)->where('status', Logbook::STATUS_APPROVED),
             ])
             ->when($search, fn ($q) => $q->where(fn ($q) => $q
                 ->where('name', 'like', "%{$search}%")

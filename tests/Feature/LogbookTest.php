@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Logbook;
+use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,6 +22,7 @@ class LogbookTest extends TestCase
     {
         parent::setUp();
 
+        Semester::factory()->current()->create();
         $this->supervisor = User::factory()->supervisor()->create();
         $this->student = User::factory()->supervisedBy($this->supervisor)->create();
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,6 +24,7 @@ class Logbook extends Model
 
     protected $fillable = [
         'student_id',
+        'semester_id',
         'week_no',
         'entry_date',
         'progress',
@@ -54,6 +56,17 @@ class Logbook extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(User::class, 'student_id');
+    }
+
+    public function semester(): BelongsTo
+    {
+        return $this->belongsTo(Semester::class);
+    }
+
+    /** Entries of one semester; with no semester given, every entry. */
+    public function scopeInSemester(Builder $query, ?Semester $semester): void
+    {
+        $query->when($semester, fn ($q) => $q->where($q->qualifyColumn('semester_id'), $semester->id));
     }
 
     /** Approved and signed by the supervisor; the entry is locked. */

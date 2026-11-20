@@ -106,10 +106,24 @@ class User extends Authenticatable
         return $this->hasManyThrough(Logbook::class, User::class, 'supervisor_id', 'student_id');
     }
 
-    /** First week number the student hasn't logged yet, or null when every week is done. */
+    /** A student's projects, one per semester. */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'student_id');
+    }
+
+    /** The student's project in the given (default: current) semester. */
+    public function project(?Semester $semester = null): ?Project
+    {
+        $semester ??= Semester::current();
+
+        return $semester ? $this->projects()->where('semester_id', $semester->id)->first() : null;
+    }
+
+    /** First week of the current semester the student hasn't logged yet, or null when every week is done. */
     public function nextLogbookWeek(): ?int
     {
-        $usedWeeks = $this->logbooks()->pluck('week_no')->all();
+        $usedWeeks = $this->logbooks()->inSemester(Semester::current())->pluck('week_no')->all();
 
         return collect(range(1, Logbook::MAX_WEEKS))->first(fn (int $week) => ! in_array($week, $usedWeeks));
     }

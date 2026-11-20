@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Logbook;
+use App\Models\Project;
+use App\Models\Semester;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -19,8 +21,12 @@ class ProfileController extends Controller
         $total = (clone $logbooks)->count();
         $reviewed = (clone $logbooks)->whereNotNull('logbooks.reviewed_at')->count();
 
+        $semester = Semester::current();
+
         return view('profile', [
             'user' => $user,
+            'semester' => $semester,
+            'project' => $user->isStudent() ? $user->project($semester) : null,
             'stats' => [
                 'total' => $total,
                 'reviewed' => $reviewed,
@@ -43,6 +49,22 @@ class ProfileController extends Controller
         $user->update($data);
 
         return back()->with('success_title', 'Profile updated')->with('success', 'Your details have been saved.');
+    }
+
+    /** The student's project title and stage for the current semester. */
+    public function project(Request $request): RedirectResponse
+    {
+        $semester = Semester::current();
+        abort_unless($semester, 422, 'There is no current semester yet. Ask your FYP coordinator.');
+
+        $data = $request->validateWithBag('project', [
+            'title' => ['required', 'string', 'max:255'],
+            'stage' => ['required', Rule::in(array_keys(Project::STAGES))],
+        ], [], ['title' => 'project title']);
+
+        $request->user()->projects()->updateOrCreate(['semester_id' => $semester->id], $data);
+
+        return back()->with('success_title', 'Project saved')->with('success', 'Your project title is now on your logbook.');
     }
 
     public function password(Request $request): RedirectResponse

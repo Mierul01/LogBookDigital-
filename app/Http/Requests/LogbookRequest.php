@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Logbook;
+use App\Models\Semester;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,8 +26,10 @@ class LogbookRequest extends FormRequest
         return [
             'week_no' => [
                 'required', 'integer', 'between:1,'.Logbook::MAX_WEEKS,
+                // One entry per week in the entry's semester (the current one for new entries).
                 Rule::unique('logbooks')
                     ->where('student_id', $this->user()->id)
+                    ->where('semester_id', $logbook?->semester_id ?? Semester::current()?->id)
                     ->ignore($logbook?->id),
             ],
             'entry_date' => ['required', 'date'],

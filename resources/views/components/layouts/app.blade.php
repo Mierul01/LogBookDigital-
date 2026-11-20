@@ -54,6 +54,9 @@
                 <a href="{{ route('admin.users.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.users.*')])>
                     <x-icon name="users" /> Users
                 </a>
+                <a href="{{ route('admin.semesters.index') }}" @class(['nav-link', 'active' => request()->routeIs('admin.semesters.*')])>
+                    <x-icon name="calendar" /> Semesters
+                </a>
             @elseif ($user->isSupervisor())
                 <a href="{{ route('students.index') }}" @class(['nav-link', 'active' => request()->routeIs('students.*')])>
                     <x-icon name="users" /> Students
@@ -98,7 +101,8 @@
             // Breadcrumb section for the current page.
             $section = match (true) {
                 request()->routeIs('logbooks.*') => [$user->isStaff() ? 'Student Logbooks' : 'My Logbook', route('logbooks.index')],
-                request()->routeIs('admin.*') => ['Administration', route('admin.users.index')],
+                request()->routeIs('admin.semesters.*') => ['Semesters', route('admin.semesters.index')],
+                request()->routeIs('admin.*') => ['Users', route('admin.users.index')],
                 request()->routeIs('students.*') => ['Students', route('students.index')],
                 request()->routeIs('profile') => ['Account', route('profile')],
                 default => null,

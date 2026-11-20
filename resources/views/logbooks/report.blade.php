@@ -50,6 +50,8 @@
             <div><dt class="text-xs text-zinc-500">No. Matrik</dt><dd class="font-semibold">{{ $student->username }}</dd></div>
             <div><dt class="text-xs text-zinc-500">Penyelia</dt><dd class="font-semibold">{{ $student->supervisor?->name ?? '—' }}</dd></div>
             <div><dt class="text-xs text-zinc-500">Dicetak</dt><dd class="font-semibold">{{ now()->format('j M Y') }}</dd></div>
+            <div class="col-span-2 sm:col-span-3"><dt class="text-xs text-zinc-500">Tajuk Projek</dt><dd class="font-semibold">{{ $project?->title ?? '—' }}</dd></div>
+            <div><dt class="text-xs text-zinc-500">Semester · Peringkat</dt><dd class="font-semibold">{{ $semester?->name ?? '—' }}{{ $project ? ' · '.$project->stageLabel() : '' }}</dd></div>
         </dl>
 
         {{-- Weeks --}}

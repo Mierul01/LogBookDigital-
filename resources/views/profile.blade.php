@@ -109,6 +109,38 @@
 
         {{-- Right: forms --}}
         <div class="space-y-8 lg:col-span-2" data-reveal-group>
+            @if ($user->isStudent())
+                <form method="POST" action="{{ route('profile.project') }}" class="card" data-reveal>
+                    @csrf @method('PUT')
+                    <div class="card-header">
+                        <span class="card-icon bg-ukm-gold/15 text-amber-600"><x-icon name="academic-cap" class="h-5 w-5" /></span>
+                        <div>
+                            <h3 class="font-semibold">Final Year Project</h3>
+                            <p class="text-xs text-zinc-500">{{ $semester?->name ?? 'No current semester yet' }} · shown on your logbook and its printout</p>
+                        </div>
+                    </div>
+                    @if ($semester)
+                        <div class="grid gap-5 p-6 sm:grid-cols-3">
+                            <x-field name="title" label="Project title" bag="project" class="sm:col-span-2">
+                                <x-icon-input icon="document" name="title" value="{{ old('title', $project?->title) }}" required placeholder="e.g. QR code attendance app for UKM lectures" />
+                            </x-field>
+                            <x-field name="stage" label="Stage" bag="project">
+                                <select id="stage" name="stage" data-select class="input">
+                                    @foreach (App\Models\Project::STAGES as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('stage', $project?->stage) === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </x-field>
+                        </div>
+                        <div class="flex justify-end rounded-b-2xl border-t border-zinc-100 bg-zinc-50/60 px-6 py-4">
+                            <button type="submit" class="btn btn-primary"><x-icon name="check" class="h-4 w-4" /> Save project</button>
+                        </div>
+                    @else
+                        <p class="px-6 py-5 text-sm text-zinc-500">Your FYP coordinator hasn't opened a semester yet.</p>
+                    @endif
+                </form>
+            @endif
+
             <form method="POST" action="{{ route('profile.update') }}" class="card" data-reveal>
                 @csrf @method('PATCH')
                 <div class="card-header">

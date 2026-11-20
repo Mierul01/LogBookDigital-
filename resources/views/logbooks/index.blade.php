@@ -4,9 +4,9 @@
                :subtitle="match (true) { $user->isCoordinator() => 'Every logbook entry in the faculty', $user->isSupervisor() => 'Read, comment on and sign your students\' weekly entries', default => 'All your weekly entries in one place' }">
     <x-slot:actions>
         @if ($user->isStudent())
-            <a href="{{ route('logbooks.report') }}" class="btn btn-secondary"><x-icon name="printer" class="h-4 w-4" /> <span class="hidden sm:inline">Full logbook</span></a>
+            <a href="{{ route('logbooks.report', array_filter(['semester' => $semester?->id])) }}" class="btn btn-secondary"><x-icon name="printer" class="h-4 w-4" /> <span class="hidden sm:inline">Full logbook</span></a>
         @elseif ($filters['student'])
-            <a href="{{ route('logbooks.report', ['student' => $filters['student']]) }}" class="btn btn-secondary"><x-icon name="printer" class="h-4 w-4" /> <span class="hidden sm:inline">Full logbook</span></a>
+            <a href="{{ route('logbooks.report', array_filter(['student' => $filters['student'], 'semester' => $semester?->id])) }}" class="btn btn-secondary"><x-icon name="printer" class="h-4 w-4" /> <span class="hidden sm:inline">Full logbook</span></a>
         @endif
         @can('create', App\Models\Logbook::class)
             <a href="{{ route('logbooks.create') }}" class="btn btn-primary"><x-icon name="plus" class="h-4 w-4" /> <span class="hidden sm:inline">New entry</span></a>
@@ -30,6 +30,14 @@
                 <x-icon name="search" class="input-icon pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                 <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Search entries…" class="input w-56 py-2.5 pl-9">
             </label>
+            @if ($semesters->count() > 1)
+                <select name="semester" onchange="this.form.submit()" data-select class="input w-auto min-w-48">
+                    @foreach ($semesters as $s)
+                        <option value="{{ $s->id }}" @selected($semester?->id === $s->id)>{{ $s->name }}{{ $s->is_current ? ' (current)' : '' }}</option>
+                    @endforeach
+                    <option value="all" @selected($filters['semester'] === 'all')>All semesters</option>
+                </select>
+            @endif
             @if ($user->isCoordinator() && $supervisors->isNotEmpty())
                 <select name="supervisor" onchange="this.form.student && (this.form.student.value = ''); this.form.submit()" data-select class="input w-auto min-w-56">
                     <option value="">All supervisors</option>
