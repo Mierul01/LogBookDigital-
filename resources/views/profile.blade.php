@@ -1,9 +1,9 @@
 <x-layouts.app title="My Profile" subtitle="Manage your personal details and account security">
     {{-- Profile header --}}
     <section class="card animate-fade-up overflow-hidden">
-        <div class="relative h-36 overflow-hidden bg-zinc-950 sm:h-44">
+        <div class="relative h-36 overflow-hidden bg-brand-950 sm:h-44">
             <img src="{{ asset('images/UKMBG.jpg') }}" alt="" class="absolute inset-0 h-full w-full scale-105 object-cover opacity-40">
-            <div class="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/70 to-brand-900/60"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-brand-950 via-brand-950/70 to-brand-700/60"></div>
             <div class="bg-grid absolute inset-0 [mask-image:linear-gradient(to_left,black,transparent)]"></div>
         </div>
 

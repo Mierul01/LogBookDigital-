@@ -13,15 +13,15 @@
     @endif
 
     {{-- Welcome banner --}}
-    <section class="relative animate-fade-up overflow-hidden rounded-3xl bg-zinc-950 px-6 py-8 text-white shadow-xl shadow-zinc-900/10 sm:px-10 sm:py-10">
+    <section class="relative animate-fade-up overflow-hidden rounded-3xl bg-brand-950 px-6 py-8 text-white shadow-xl shadow-brand-900/20 sm:px-10 sm:py-10">
         <div class="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_top_right,black,transparent_70%)]"></div>
-        <div class="absolute -top-24 -right-16 h-72 w-72 rounded-full bg-brand-600/40 blur-3xl"></div>
-        <div class="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-brand-900/50 blur-3xl"></div>
+        <div class="absolute -top-24 -right-16 h-72 w-72 rounded-full bg-brand-500/40 blur-3xl"></div>
+        <div class="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-ukm-gold/15 blur-3xl"></div>
 
         <div class="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div class="max-w-xl">
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-zinc-200 ring-1 ring-white/15">
-                    <x-icon name="sparkles" class="h-3.5 w-3.5 text-brand-500" />
+                    <x-icon name="sparkles" class="h-3.5 w-3.5 text-ukm-gold" />
                     {{ $user->isSupervisor() ? 'Supervisor workspace' : 'Final Year Project' }}
                 </span>
                 <h2 class="mt-4 text-2xl font-bold tracking-tight sm:text-3xl">{{ $greeting }}, {{ $user->name }}</h2>

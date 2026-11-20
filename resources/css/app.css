@@ -15,16 +15,20 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 
-    --color-brand-50: #fef2f2;
-    --color-brand-100: #fee2e2;
-    --color-brand-200: #fecaca;
-    --color-brand-500: #ef4444;
-    --color-brand-600: #dc2626;
-    --color-brand-700: #b91c1c;
-    --color-brand-800: #991b1b;
-    --color-brand-900: #7f1d1d;
+    /* UKM royal blue (from the crest) is the main colour, UKM gold the accent.
+       Red is kept only for errors and delete actions. */
+    --color-brand-50: #eef4fb;
+    --color-brand-100: #d9e6f6;
+    --color-brand-200: #b5ccec;
+    --color-brand-300: #86a9dd;
+    --color-brand-400: #5583c9;
+    --color-brand-500: #2f66b5;
+    --color-brand-600: #1d4f9c;
+    --color-brand-700: #183f7f;
+    --color-brand-800: #153466;
+    --color-brand-900: #122a52;
+    --color-brand-950: #0b1a35;
 
-    /* UKM logo blue and gold, used as accents alongside the red brand colour. */
     --color-ukm-blue: #1d4f9c;
     --color-ukm-blue-50: #eef3fb;
     --color-ukm-gold: #f5b41a;
@@ -90,9 +94,9 @@
         @apply mb-2 block text-sm font-semibold text-zinc-800;
     }
 
-    /* Soft grey field that turns white with a red glow when focused. */
+    /* Soft grey field that turns white with a blue glow when focused. */
     .input {
-        @apply block w-full rounded-xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-900 transition duration-200 ease-(--ease-out-soft) placeholder:text-zinc-400 hover:border-zinc-300 hover:bg-white focus:border-brand-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(220,38,38,0.1)] focus:outline-none disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-100/70 disabled:text-zinc-500;
+        @apply block w-full rounded-xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-900 transition duration-200 ease-(--ease-out-soft) placeholder:text-zinc-400 hover:border-zinc-300 hover:bg-white focus:border-brand-500 focus:bg-white focus:shadow-[0_0_0_4px_rgba(29,79,156,0.12)] focus:outline-none disabled:cursor-not-allowed disabled:border-zinc-200 disabled:bg-zinc-100/70 disabled:text-zinc-500;
     }
 
     textarea.input {
@@ -113,7 +117,7 @@
     }
 
     .btn-primary {
-        @apply bg-brand-600 text-white shadow-[0_1px_2px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-brand-700 hover:shadow-[0_8px_20px_-6px_rgba(220,38,38,0.5)] focus:ring-brand-500/25;
+        @apply bg-brand-600 text-white shadow-[0_1px_2px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-brand-700 hover:shadow-[0_8px_20px_-6px_rgba(29,79,156,0.5)] focus:ring-brand-500/25;
     }
 
     .btn-secondary {
@@ -129,28 +133,28 @@
     }
 
     .nav-section {
-        @apply px-3 pt-5 pb-2 text-[11px] font-semibold tracking-[0.12em] text-zinc-500 uppercase;
+        @apply px-3 pt-5 pb-2 text-[11px] font-semibold tracking-[0.12em] text-brand-300/70 uppercase;
     }
 
     .nav-link {
-        @apply relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-400 transition duration-200 ease-(--ease-out-soft) hover:translate-x-1 hover:bg-white/5 hover:text-white;
+        @apply relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-brand-100/70 transition duration-200 ease-(--ease-out-soft) hover:translate-x-1 hover:bg-white/5 hover:text-white;
     }
 
     .nav-link.active {
         @apply bg-white/10 text-white hover:translate-x-0;
     }
 
-    /* Red bar on the left edge of the active menu item. */
+    /* Gold bar on the left edge of the active menu item. */
     .nav-link.active::before {
         content: '';
-        @apply absolute top-1/2 -left-3 h-6 w-1 -translate-y-1/2 rounded-r-full bg-brand-500;
+        @apply absolute top-1/2 -left-3 h-6 w-1 -translate-y-1/2 rounded-r-full bg-ukm-gold;
     }
 
     .table-head {
         @apply bg-zinc-50/80 text-left text-[11px] font-semibold tracking-[0.08em] text-zinc-500 uppercase;
     }
 
-    /* Zebra rows: white, then light grey, with a red tint on hover. */
+    /* Zebra rows: white, then light grey, with a blue tint on hover. */
     .table-row {
         @apply bg-white transition-colors duration-150 even:bg-zinc-100/70 hover:bg-brand-50;
     }
@@ -214,7 +218,7 @@
     }
 
     .ts-wrapper.single.focus .ts-control {
-        @apply border-brand-500 bg-white shadow-[0_0_0_4px_rgba(220,38,38,0.1)];
+        @apply border-brand-500 bg-white shadow-[0_0_0_4px_rgba(29,79,156,0.12)];
     }
 
     .ts-wrapper.input-error .ts-control {
@@ -364,7 +368,7 @@
     .flatpickr-day.selected,
     .flatpickr-day.selected:hover,
     .flatpickr-day.selected.today {
-        @apply bg-brand-600 font-bold text-white shadow-[0_6px_14px_-4px_rgba(220,38,38,0.55)] ring-0;
+        @apply bg-brand-600 font-bold text-white shadow-[0_6px_14px_-4px_rgba(29,79,156,0.55)] ring-0;
     }
 
     .flatpickr-day.prevMonthDay,

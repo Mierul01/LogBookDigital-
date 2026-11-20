@@ -20,17 +20,17 @@
 <div data-sidebar-backdrop data-sidebar-toggle class="fixed inset-0 z-30 hidden bg-zinc-950/60 backdrop-blur-sm lg:hidden"></div>
 
 {{-- Sidebar --}}
-<aside data-sidebar class="fixed inset-y-0 left-0 z-40 flex w-72 -translate-x-full flex-col bg-zinc-950 transition-transform duration-300 ease-(--ease-out-soft) lg:translate-x-0">
+<aside data-sidebar class="fixed inset-y-0 left-0 z-40 flex w-72 -translate-x-full flex-col bg-brand-950 transition-transform duration-300 ease-(--ease-out-soft) lg:translate-x-0">
     {{-- Subtle brand glow at the top of the sidebar --}}
-    <div class="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-brand-600/15 to-transparent"></div>
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-ukm-gold/10 to-transparent"></div>
 
     <a href="{{ route('dashboard') }}" class="group relative flex items-center gap-3.5 px-6 pt-8 pb-7">
         <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white p-1.5 shadow-lg shadow-black/20 ring-1 ring-white/10 transition duration-300 group-hover:scale-105 group-hover:rotate-[-3deg]">
             <img src="{{ asset('images/ukm.png') }}" alt="UKM" class="h-full w-full object-contain">
         </span>
         <span class="min-w-0 leading-tight">
-            <span class="block text-[15px] font-bold tracking-tight text-white">Digital LogBook<span class="text-brand-500">+</span></span>
-            <span class="mt-1 block text-xs text-zinc-400">Universiti Kebangsaan Malaysia</span>
+            <span class="block text-[15px] font-bold tracking-tight text-white">Digital LogBook<span class="text-ukm-gold">+</span></span>
+            <span class="mt-1 block text-xs text-brand-200/70">Universiti Kebangsaan Malaysia</span>
         </span>
     </a>
 
@@ -63,7 +63,7 @@
             </a>
             <form method="POST" action="{{ route('logout') }}" data-confirm="You will need to sign in again to access your logbook." data-confirm-title="Log out?" data-confirm-button="Yes, log out" data-confirm-icon="question">
                 @csrf
-                <button type="submit" class="nav-link w-full hover:text-brand-400">
+                <button type="submit" class="nav-link w-full hover:text-red-300">
                     <x-icon name="logout" /> Log out
                 </button>
             </form>
@@ -72,10 +72,10 @@
 
     <div class="relative p-4">
         <a href="{{ route('profile') }}" class="flex items-center gap-3 rounded-2xl bg-white/5 p-3 ring-1 ring-white/10 transition duration-200 hover:bg-white/10">
-            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-sm font-bold text-white">{{ $user->initials() }}</span>
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-ukm-gold to-amber-500 text-sm font-bold text-brand-950">{{ $user->initials() }}</span>
             <span class="min-w-0 flex-1">
                 <span class="block truncate text-sm font-semibold text-white">{{ $user->name }}</span>
-                <span class="block truncate text-xs text-zinc-400">{{ ucfirst($user->role) }} · {{ $user->username }}</span>
+                <span class="block truncate text-xs text-brand-200/70">{{ ucfirst($user->role) }} · {{ $user->username }}</span>
             </span>
             <x-icon name="chevron-right" class="h-4 w-4 text-zinc-500" />
         </a>
