@@ -68,7 +68,7 @@
                             @if ($user->isSupervisor())
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-3">
-                                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-900 text-xs font-bold text-white">{{ $logbook->student->initials() }}</span>
+                                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-xs font-bold text-white">{{ $logbook->student->initials() }}</span>
                                         <div>
                                             <p class="font-semibold text-zinc-900">{{ $logbook->student->name }}</p>
                                             <p class="text-xs text-zinc-500">{{ $logbook->student->username }}</p>

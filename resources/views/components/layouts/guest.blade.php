@@ -9,7 +9,7 @@
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full bg-white font-sans text-zinc-900 antialiased">
+<body class="theme-dark h-full bg-ink-950 font-sans text-zinc-900 antialiased">
 <div class="flex min-h-full">
     {{-- Brand panel --}}
     <div class="relative hidden w-1/2 overflow-hidden bg-brand-950 lg:block">
@@ -18,26 +18,26 @@
         <div class="bg-grid absolute inset-0 [mask-image:radial-gradient(ellipse_at_bottom_left,black,transparent_70%)]"></div>
         <div class="relative flex h-full flex-col justify-between p-12 text-white xl:p-16">
             <div class="flex animate-fade-in items-center gap-3.5">
-                <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white p-1.5 shadow-xl">
+                <span class="flex h-14 w-14 items-center justify-center keep-light rounded-2xl bg-white p-1.5 shadow-xl">
                     <img src="{{ asset('images/ukm.png') }}" alt="UKM" class="h-full w-full object-contain">
                 </span>
                 <span class="leading-tight">
                     <span class="block text-lg font-bold">Digital LogBook<span class="text-ukm-gold">+</span></span>
-                    <span class="block text-sm text-brand-200/80">Universiti Kebangsaan Malaysia</span>
+                    <span class="block text-sm text-slate-300">Universiti Kebangsaan Malaysia</span>
                 </span>
             </div>
 
             <div class="max-w-lg animate-fade-up">
                 <h2 class="text-4xl leading-tight font-bold tracking-tight xl:text-5xl">Every week of your FYP, <span class="text-ukm-gold">logged and signed.</span></h2>
-                <p class="mt-4 text-lg text-brand-100/90">Record your progress, get feedback from your supervisor, and keep your whole semester in one place.</p>
+                <p class="mt-4 text-lg text-slate-200">Record your progress, get feedback from your supervisor, and keep your whole semester in one place.</p>
             </div>
 
-            <p class="text-sm text-brand-200/60">&copy; {{ date('Y') }} Digital LogBook+</p>
+            <p class="text-sm text-slate-400">&copy; {{ date('Y') }} Digital LogBook+</p>
         </div>
     </div>
 
     {{-- Form panel --}}
-    <div class="flex flex-1 flex-col justify-center bg-white px-6 py-12 sm:px-12 lg:px-20">
+    <div class="flex flex-1 flex-col justify-center bg-ink-950 px-6 py-12 sm:px-12 lg:px-20">
         <div class="mx-auto w-full max-w-sm animate-fade-up">
             <div class="mb-8 flex items-center gap-3 lg:hidden">
                 <img src="{{ asset('images/ukm.png') }}" alt="UKM" class="h-10 w-10 object-contain">

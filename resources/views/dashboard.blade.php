@@ -59,7 +59,7 @@
                 <div class="relative flex items-center justify-between gap-6">
                     <div class="min-w-0">
                         <h2 class="text-xl font-bold tracking-tight text-white sm:text-2xl">{{ $greeting }}, <span class="text-ukm-gold">{{ $firstName }}</span> 👋</h2>
-                        <p class="mt-1 text-sm text-brand-100">
+                        <p class="mt-1 text-sm text-slate-200">
                             @if ($isSupervisor)
                                 @if ($stats['pending'])
                                     You have <span class="font-semibold text-white">{{ $stats['pending'] }} {{ Str::plural('entry', $stats['pending']) }}</span> waiting for your review and signature.
@@ -82,15 +82,15 @@
                                 <x-icon name="sparkles" class="h-3.5 w-3.5" /> {{ $isSupervisor ? 'Supervisor workspace' : 'Final Year Project' }}
                             </span>
                             @if ($isSupervisor && $stats['pending'])
-                                <a href="{{ route('logbooks.index', ['status' => 'pending']) }}" class="inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-brand-800 transition hover:bg-brand-50">Review now <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
+                                <a href="{{ route('logbooks.index', ['status' => 'pending']) }}" class="keep-light inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-brand-800 transition hover:bg-brand-50">Review now <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
                             @elseif (! $isSupervisor && $stats['next_week'])
-                                <a href="{{ route('logbooks.create') }}" class="inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-brand-800 transition hover:bg-brand-50">Write week {{ $stats['next_week'] }} <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
+                                <a href="{{ route('logbooks.create') }}" class="keep-light inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-brand-800 transition hover:bg-brand-50">Write week {{ $stats['next_week'] }} <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
                             @endif
                         </div>
                     </div>
 
                     <div class="hidden shrink-0 items-center gap-6 md:flex">
-                        <p class="max-w-44 text-sm leading-snug text-brand-100 italic">“Small steps every week lead to a finished project.”</p>
+                        <p class="max-w-44 text-sm leading-snug text-slate-200 italic">“Small steps every week lead to a finished project.”</p>
                         <div class="relative">
                             <div class="absolute -top-3 -left-6 flex items-end gap-1 opacity-70">
                                 <span class="h-3 w-1.5 rounded-full bg-white/50"></span>
