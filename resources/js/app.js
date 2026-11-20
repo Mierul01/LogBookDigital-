@@ -138,6 +138,15 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
+// Light / dark switch in the top bar. The page flips at once (no reload, so typed text is kept)
+// and the choice is saved in a cookie that the server reads to render the next page.
+document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const dark = document.documentElement.classList.toggle('theme-dark');
+        document.cookie = `theme=${dark ? 'dark' : 'light'}; path=/; max-age=31536000; SameSite=Lax`;
+    });
+});
+
 // Mobile sidebar toggle.
 document.querySelectorAll('[data-sidebar-toggle]').forEach((button) => {
     button.addEventListener('click', () => {

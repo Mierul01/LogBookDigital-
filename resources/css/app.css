@@ -528,8 +528,43 @@
  * Dark dashboard (layout with dark: true)
  * ------------------------------------------------------------------------- */
 @layer components {
+    /* Page background and top bar for both themes. */
+    .app-bg {
+        @apply bg-zinc-50;
+    }
+
+    .theme-dark.app-bg,
+    .theme-dark .app-bg {
+        @apply bg-ink-950;
+    }
+
+    .app-topbar {
+        @apply border-zinc-200/70 bg-white/85;
+    }
+
+    .theme-dark .app-topbar {
+        @apply border-white/[0.07] bg-ink-950/85;
+    }
+
+    /* The switch shows a moon in light mode and a sun in dark mode. */
+    .theme-icon-sun {
+        @apply hidden;
+    }
+
+    .theme-dark .theme-icon-sun {
+        @apply block;
+    }
+
+    .theme-dark .theme-icon-moon {
+        @apply hidden;
+    }
+
     .dash-card {
-        @apply rounded-2xl border border-white/[0.07] bg-ink-900 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset];
+        @apply rounded-2xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)];
+    }
+
+    .theme-dark .dash-card {
+        @apply border-white/[0.07] bg-ink-900 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset];
     }
 
     .dash-head {
@@ -537,7 +572,7 @@
     }
 
     .dash-title {
-        @apply flex min-w-0 items-center gap-2.5 truncate text-[15px] font-semibold whitespace-nowrap text-white;
+        @apply flex min-w-0 items-center gap-2.5 truncate text-[15px] font-semibold whitespace-nowrap text-zinc-900;
     }
 
     .dash-icon {
@@ -545,13 +580,12 @@
     }
 
     .dash-link {
-        @apply inline-flex shrink-0 items-center gap-1 text-xs font-medium whitespace-nowrap text-slate-300 transition hover:text-ukm-gold;
+        @apply inline-flex shrink-0 items-center gap-1 text-xs font-medium whitespace-nowrap text-zinc-600 transition hover:text-brand-600;
     }
 
-    .theme-dark .table-row {
-        @apply bg-transparent even:bg-white/[0.02] hover:bg-white/[0.04];
+    .theme-dark .dash-link:hover {
+        @apply text-ukm-gold;
     }
-
     /* Chart point tooltip */
     .chart-tip {
         @apply pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border border-white/10 bg-ink-800 px-2.5 py-1.5 text-xs whitespace-nowrap text-white opacity-0 shadow-lg transition-opacity;

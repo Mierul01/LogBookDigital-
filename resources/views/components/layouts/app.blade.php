@@ -1,7 +1,12 @@
-@props(['title' => 'Dashboard', 'subtitle' => null, 'dark' => true])
+@props(['title' => 'Dashboard', 'subtitle' => null])
+
+@php
+    // Light/dark choice saved by the top-bar switch; dark until the user picks light.
+    $dark = request()->cookie('theme', 'dark') !== 'light';
+@endphp
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['h-full', 'bg-ink-950' => $dark, 'bg-zinc-50' => ! $dark])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['app-bg h-full', 'theme-dark' => $dark])>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,7 +16,7 @@
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body @class(['h-full font-sans antialiased', 'theme-dark bg-ink-950 text-slate-100' => $dark, 'bg-zinc-50 text-zinc-900' => ! $dark])>
+<body class="app-bg h-full font-sans text-zinc-900 antialiased">
 @php
     $user = auth()->user();
 @endphp
@@ -84,7 +89,7 @@
 
 <div class="lg:pl-72">
     {{-- Top bar --}}
-    <header data-topbar @class(['sticky top-0 z-20 border-b backdrop-blur-md transition-shadow duration-300', 'border-white/[0.07] bg-ink-950/85' => $dark, 'border-zinc-200/70 bg-white/85' => ! $dark])>
+    <header data-topbar class="app-topbar sticky top-0 z-20 border-b backdrop-blur-md transition-shadow duration-300">
         @php
             // Breadcrumb section for the current page.
             $section = match (true) {
@@ -94,8 +99,8 @@
                 default => null,
             };
         @endphp
-        <div @class(['mx-auto flex h-16 items-center gap-3 px-4 sm:px-6', 'max-w-[1500px] lg:px-7' => $dark, 'max-w-7xl lg:px-10' => ! $dark])>
-            <button type="button" data-sidebar-toggle @class(['icon-btn -ml-1 lg:hidden', 'text-slate-300 hover:bg-white/10 hover:text-white' => $dark]) aria-label="Open menu">
+        <div class="mx-auto flex h-16 max-w-[1500px] items-center gap-3 px-4 sm:px-6 lg:px-7">
+            <button type="button" data-sidebar-toggle class="icon-btn -ml-1 lg:hidden" aria-label="Open menu">
                 <x-icon name="menu" />
             </button>
 
@@ -110,10 +115,10 @@
                     @endif
                 </nav>
                 <div class="flex min-w-0 items-baseline gap-2.5">
-                    <h1 @class(['shrink-0 truncate text-lg leading-tight font-bold tracking-tight', 'text-white' => $dark, 'text-zinc-900' => ! $dark])>{{ $title }}</h1>
+                    <h1 class="shrink-0 truncate text-lg leading-tight font-bold tracking-tight text-zinc-900">{{ $title }}</h1>
                     @if ($subtitle)
                         <span class="hidden h-1 w-1 shrink-0 translate-y-[-3px] rounded-full bg-zinc-300 lg:block"></span>
-                        <p @class(['hidden truncate text-sm lg:block', 'text-slate-400' => $dark, 'text-zinc-500' => ! $dark])>{{ $subtitle }}</p>
+                        <p class="hidden truncate text-sm text-zinc-500 lg:block">{{ $subtitle }}</p>
                     @endif
                 </div>
             </div>
@@ -123,24 +128,28 @@
                 <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input type="search" name="q" value="{{ request()->routeIs('logbooks.index') ? request('q') : '' }}" data-global-search
                        placeholder="Search entries… (Ctrl+K)" aria-label="Search logbook entries"
-                       @class(['w-full rounded-xl border py-2.5 pr-3 pl-10 text-sm transition focus:outline-none',
-                               'border-white/10 bg-white/5 text-white placeholder:text-slate-400 focus:border-brand-400 focus:bg-white/10' => $dark,
-                               'border-zinc-200 bg-zinc-50 text-zinc-900 placeholder:text-zinc-400 focus:border-brand-500 focus:bg-white' => ! $dark])>
+                       class="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 pr-3 pl-10 text-sm text-zinc-900 transition placeholder:text-zinc-400 focus:border-brand-500 focus:bg-white focus:outline-none">
             </form>
 
-            <span @class(['hidden shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium xl:inline-flex', 'bg-white/5 text-slate-300 ring-1 ring-white/10' => $dark, 'bg-zinc-100 text-zinc-600' => ! $dark])>
+            <span class="hidden shrink-0 items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-600 xl:inline-flex">
                 <x-icon name="calendar" class="h-3.5 w-3.5 text-slate-400" /> {{ now()->format('D, j M Y') }}
             </span>
+            {{-- Light / dark switch (resources/js/app.js) --}}
+            <button type="button" data-theme-toggle class="icon-btn shrink-0" aria-label="Switch to light or dark mode" title="Switch light / dark mode">
+                <x-icon name="sun" class="theme-icon-sun h-5 w-5" />
+                <x-icon name="moon" class="theme-icon-moon h-5 w-5" />
+            </button>
+
             {{-- Notifications --}}
             @php
                 $unreadCount = $user->unreadNotifications()->count();
                 $notifications = $user->notifications()->latest()->take(8)->get();
             @endphp
             <details class="group relative shrink-0" data-dropdown>
-                <summary @class(['icon-btn relative flex cursor-pointer list-none items-center [&::-webkit-details-marker]:hidden', 'text-slate-300 hover:bg-white/10 hover:text-white' => $dark]) aria-label="Notifications">
+                <summary class="icon-btn relative flex cursor-pointer list-none items-center [&::-webkit-details-marker]:hidden" aria-label="Notifications">
                     <x-icon name="bell" />
                     @if ($unreadCount)
-                        <span class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ukm-red px-1 text-[10px] font-bold text-white ring-2 {{ $dark ? 'ring-ink-950' : 'ring-white' }}">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                        <span class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ukm-red px-1 text-[10px] font-bold text-white ring-2 ring-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                     @endif
                 </summary>
                 <div class="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] origin-top-right animate-scale-in overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_20px_40px_-12px_rgba(16,24,40,0.25)]">
@@ -187,13 +196,13 @@
         </div>
     </header>
 
-    <main @class(['mx-auto px-4 py-6 sm:px-6 lg:py-7', 'max-w-[1500px] lg:px-7' => $dark, 'max-w-7xl lg:px-10' => ! $dark])>
+    <main class="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-7 lg:py-7">
         <x-flash />
         {{ $slot }}
     </main>
 
-    <footer @class(['mx-auto px-4 pb-8 sm:px-6', 'max-w-[1500px] lg:px-7' => $dark, 'max-w-7xl lg:px-10' => ! $dark])>
-        <div @class(['border-t pt-6 text-center text-xs', 'border-white/10 text-slate-500' => $dark, 'border-zinc-200 text-zinc-400' => ! $dark])>
+    <footer class="mx-auto max-w-[1500px] px-4 pb-8 sm:px-6 lg:px-7">
+        <div class="border-t border-zinc-200 pt-6 text-center text-xs text-zinc-400">
             <p>&copy; {{ date('Y') }} Digital LogBook+ · Universiti Kebangsaan Malaysia</p>
         </div>
     </footer>
