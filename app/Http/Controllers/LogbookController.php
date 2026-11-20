@@ -6,6 +6,7 @@ use App\Http\Requests\LogbookRequest;
 use App\Http\Requests\ReviewLogbookRequest;
 use App\Models\Logbook;
 use App\Models\LogbookAttachment;
+use App\Models\LogbookEvent;
 use App\Models\Semester;
 use App\Models\User;
 use App\Notifications\LogbookActivity;
@@ -112,7 +113,8 @@ class LogbookController extends Controller
             'submitted_at' => now(),
         ]);
 
-        $this->saveAttachments($request, $logbook);
+        $added = $this->saveAttachments($request, $logbook);
+        $logbook->record('submitted', $request->user(), note: $added ? 'Files: '.implode(', ', $added) : null);
 
         $this->notifySupervisor($logbook, 'submitted', "{$logbook->student->name} submitted week {$logbook->week_no}.");
 
@@ -125,7 +127,7 @@ class LogbookController extends Controller
     {
         Gate::authorize('view', $logbook);
 
-        return view('logbooks.show', ['logbook' => $logbook->load(['student.supervisor', 'attachments'])]);
+        return view('logbooks.show', ['logbook' => $logbook->load(['student.supervisor', 'attachments', 'events.user'])]);
     }
 
     public function edit(Request $request, Logbook $logbook): View
@@ -143,6 +145,10 @@ class LogbookController extends Controller
         Gate::authorize('update', $logbook);
 
         $data = $request->safe()->except(['attachments', 'remove_attachments']);
+        // No meeting this week: clear any meeting details left from before.
+        if (($data['meeting_mode'] ?? null) === 'none') {
+            $data += ['meeting_time' => null, 'meeting_minutes' => null, 'meeting_place' => null];
+        }
         if (blank($data['student_signature'] ?? null)) {
             unset($data['student_signature']);
         }
@@ -153,10 +159,22 @@ class LogbookController extends Controller
             $data += ['status' => Logbook::STATUS_PENDING, 'submitted_at' => now()];
         }
 
+        $before = $logbook->getRawOriginal();
         $logbook->update($data);
 
-        $logbook->attachments()->whereIn('id', (array) $request->input('remove_attachments', []))->get()->each->delete();
-        $this->saveAttachments($request, $logbook);
+        $removed = $logbook->attachments()->whereIn('id', (array) $request->input('remove_attachments', []))->get();
+        $removed->each->delete();
+        $added = $this->saveAttachments($request, $logbook);
+
+        // History: what changed, and which files came and went.
+        $changes = LogbookEvent::diff($before, $data);
+        $fileNote = collect([
+            $added ? 'Added '.implode(', ', $added) : null,
+            $removed->isNotEmpty() ? 'Removed '.$removed->pluck('original_name')->implode(', ') : null,
+        ])->filter()->implode('. ');
+        if ($resubmitted || $changes || $fileNote) {
+            $logbook->record($resubmitted ? 'resubmitted' : 'edited', $request->user(), $changes, $fileNote ?: null);
+        }
 
         if ($resubmitted) {
             $this->notifySupervisor($logbook, 'resubmitted', "{$logbook->student->name} fixed and resent week {$logbook->week_no}.");
@@ -192,6 +210,7 @@ class LogbookController extends Controller
                 'reviewed_at' => null,
             ]);
 
+            $logbook->record('sent_back', $request->user(), note: $data['supervisor_comment']);
             $student->notify(new LogbookActivity($logbook, 'revision', "Week {$logbook->week_no} was sent back. Please read the comment and fix it."));
 
             return redirect()->route('logbooks.show', $logbook)
@@ -206,6 +225,7 @@ class LogbookController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        $logbook->record('approved', $request->user(), note: $data['supervisor_comment']);
         $student->notify(new LogbookActivity($logbook, 'approved', "Week {$logbook->week_no} was approved and signed."));
 
         return redirect()->route('logbooks.show', $logbook)
@@ -247,9 +267,12 @@ class LogbookController extends Controller
     }
 
     /** Store uploaded evidence files on the private disk, under the student's folder. */
-    private function saveAttachments(Request $request, Logbook $logbook): void
+    /** @return list<string> names of the files saved */
+    private function saveAttachments(Request $request, Logbook $logbook): array
     {
+        $names = [];
         foreach ((array) $request->file('attachments', []) as $file) {
+            $names[] = mb_substr($file->getClientOriginalName(), 0, 255);
             $logbook->attachments()->create([
                 'original_name' => mb_substr($file->getClientOriginalName(), 0, 255),
                 'path' => $file->store("attachments/{$logbook->student_id}/{$logbook->id}", 'local'),
@@ -257,6 +280,8 @@ class LogbookController extends Controller
                 'size' => $file->getSize(),
             ]);
         }
+
+        return $names;
     }
 
     private function noSemester(): RedirectResponse

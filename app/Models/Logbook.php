@@ -72,6 +72,23 @@ class Logbook extends Model
         static::deleting(fn (self $logbook) => $logbook->attachments->each->delete());
     }
 
+    /** History, oldest first. */
+    public function events(): HasMany
+    {
+        return $this->hasMany(LogbookEvent::class)->oldest('created_at')->oldest('id');
+    }
+
+    /** Add a step to the entry's history. */
+    public function record(string $action, ?User $by, ?array $changes = null, ?string $note = null): void
+    {
+        $this->events()->create([
+            'user_id' => $by?->id,
+            'action' => $action,
+            'changes' => $changes ?: null,
+            'note' => $note,
+        ]);
+    }
+
     public function attachments(): HasMany
     {
         return $this->hasMany(LogbookAttachment::class);

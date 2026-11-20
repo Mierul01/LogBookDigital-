@@ -214,6 +214,48 @@
                 @endcan
             </section>
 
+            {{-- History --}}
+            <section class="card overflow-hidden" data-reveal>
+                <div class="card-header px-5 py-4">
+                    <span class="card-icon bg-zinc-100 text-zinc-600"><x-icon name="clock" class="h-5 w-5" /></span>
+                    <div>
+                        <h3 class="font-semibold">History</h3>
+                        <p class="text-xs text-zinc-500">Every change to this entry</p>
+                    </div>
+                </div>
+                <ol class="max-h-96 space-y-3 overflow-y-auto px-5 py-4 text-sm">
+                    @forelse ($logbook->events as $event)
+                        <li class="relative border-l-2 border-zinc-200 pl-4">
+                            <span @class(['absolute top-1 -left-[5px] h-2 w-2 rounded-full',
+                                'bg-emerald-500' => $event->action === 'approved',
+                                'bg-orange-500' => $event->action === 'sent_back',
+                                'bg-brand-500' => ! in_array($event->action, ['approved', 'sent_back'])])></span>
+                            <p class="font-medium text-zinc-900">{{ $event->label() }}</p>
+                            <p class="text-xs text-zinc-500">{{ $event->user?->name ?? 'Deleted user' }} · {{ $event->created_at->format('j M Y, g:i a') }}</p>
+                            @if ($event->note)
+                                <p class="mt-1 text-xs whitespace-pre-line text-zinc-600">{{ Str::limit($event->note, 300) }}</p>
+                            @endif
+                            @if ($event->changes)
+                                <details class="mt-1 text-xs">
+                                    <summary class="cursor-pointer text-brand-600 hover:text-brand-700">{{ count($event->changes) }} {{ Str::plural('field', count($event->changes)) }} changed</summary>
+                                    <dl class="mt-1.5 space-y-2">
+                                        @foreach ($event->changes as $field => [$old, $new])
+                                            <div>
+                                                <dt class="font-semibold text-zinc-700">{{ App\Models\LogbookEvent::TRACKED[$field] ?? $field }}</dt>
+                                                <dd class="text-red-600 line-through decoration-red-300">{{ Str::limit((string) ($old ?? '—'), 400) }}</dd>
+                                                <dd class="text-emerald-700">{{ Str::limit((string) ($new ?? '—'), 400) }}</dd>
+                                            </div>
+                                        @endforeach
+                                    </dl>
+                                </details>
+                            @endif
+                        </li>
+                    @empty
+                        <li class="text-zinc-500">No history recorded for this entry yet.</li>
+                    @endforelse
+                </ol>
+            </section>
+
             @can('delete', $logbook)
                 <form method="POST" action="{{ route('logbooks.destroy', $logbook) }}" data-reveal data-confirm="The week {{ $logbook->week_no }} entry will be permanently deleted. This cannot be undone." data-confirm-title="Delete this entry?" data-confirm-button="Yes, delete" data-confirm-tone="danger">
                     @csrf @method('DELETE')
