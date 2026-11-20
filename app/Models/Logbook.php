@@ -12,6 +12,15 @@ class Logbook extends Model
 
     public const MAX_WEEKS = 14;
 
+    /** Waiting for the supervisor to read it. */
+    public const STATUS_PENDING = 'pending';
+
+    /** The supervisor sent it back for the student to fix. */
+    public const STATUS_REVISION = 'revision';
+
+    /** The supervisor approved and signed it. */
+    public const STATUS_APPROVED = 'approved';
+
     protected $fillable = [
         'student_id',
         'week_no',
@@ -20,9 +29,16 @@ class Logbook extends Model
         'current_status',
         'problem',
         'next_week_task',
+        'status',
+        'student_signature',
+        'submitted_at',
         'supervisor_comment',
         'supervisor_signature',
         'reviewed_at',
+    ];
+
+    protected $attributes = [
+        'status' => self::STATUS_PENDING,
     ];
 
     protected function casts(): array
@@ -30,6 +46,7 @@ class Logbook extends Model
         return [
             'week_no' => 'integer',
             'entry_date' => 'date',
+            'submitted_at' => 'datetime',
             'reviewed_at' => 'datetime',
         ];
     }
@@ -39,9 +56,19 @@ class Logbook extends Model
         return $this->belongsTo(User::class, 'student_id');
     }
 
-    /** An entry is reviewed once the supervisor has commented and signed it. */
+    /** Approved and signed by the supervisor; the entry is locked. */
     public function isReviewed(): bool
     {
-        return $this->reviewed_at !== null;
+        return $this->status === self::STATUS_APPROVED;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    public function needsRevision(): bool
+    {
+        return $this->status === self::STATUS_REVISION;
     }
 }

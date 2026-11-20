@@ -57,7 +57,7 @@
                 <div class="relative h-24 w-24 shrink-0">
                     <svg viewBox="0 0 36 36" class="h-24 w-24 -rotate-90">
                         <circle cx="18" cy="18" r="15.9155" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="3" />
-                        <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round"
+                        <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#f5b41a" stroke-width="3" stroke-linecap="round"
                                 stroke-dasharray="0 100" data-ring="{{ $ring }}" class="transition-[stroke-dasharray] duration-1000 ease-out" />
                     </svg>
                     <span class="absolute inset-0 flex items-center justify-center text-xl font-bold"><span data-count="{{ $ring }}">0</span>%</span>
@@ -71,6 +71,20 @@
             </div>
         </div>
     </section>
+
+    @if ($stats['revision'])
+        <a href="{{ route('logbooks.index', ['status' => 'revision']) }}" class="mt-6 flex animate-fade-up items-center gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-5 py-4 text-sm text-orange-900 transition hover:bg-orange-100">
+            <x-icon name="warning" class="h-5 w-5 shrink-0 text-orange-500" />
+            <span class="flex-1">
+                @if ($user->isSupervisor())
+                    <span class="font-semibold">{{ $stats['revision'] }} {{ \Illuminate\Support\Str::plural('entry', $stats['revision']) }}</span> sent back to students and waiting for them to fix.
+                @else
+                    Your supervisor sent back <span class="font-semibold">{{ $stats['revision'] }} {{ \Illuminate\Support\Str::plural('entry', $stats['revision']) }}</span>. Read the comment, fix it and send it again.
+                @endif
+            </span>
+            <x-icon name="chevron-right" class="h-4 w-4 text-orange-400" />
+        </a>
+    @endif
 
     {{-- Stats --}}
     <div class="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4" data-reveal-group>
@@ -86,7 +100,7 @@
             <x-stat icon="flag" label="Next to log" :value="$stats['next_week'] ? 'Week '.$stats['next_week'] : 'All done'" tone="brand"
                     :hint="$stats['next_week'] ? 'Click to start writing' : 'Every week is logged'" :href="$stats['next_week'] ? route('logbooks.create') : null" />
         @endif
-        <x-stat icon="shield" label="Reviewed" :value="$stats['reviewed']" tone="emerald" hint="Commented and signed" :href="route('logbooks.index', ['status' => 'reviewed'])" />
+        <x-stat icon="shield" label="Approved" :value="$stats['reviewed']" tone="emerald" hint="Approved and signed" :href="route('logbooks.index', ['status' => 'approved'])" />
         <x-stat icon="clock" :label="$user->isSupervisor() ? 'Awaiting your review' : 'Awaiting review'" :value="$stats['pending']" tone="amber"
                 :hint="$user->isSupervisor() ? 'Needs your signature' : 'With your supervisor'" :href="route('logbooks.index', ['status' => 'pending'])" />
     </div>
@@ -160,18 +174,20 @@
                         @foreach (range(1, $stats['weeks']) as $week)
                             @php($entry = $timeline->get($week))
                             <a href="{{ $entry ? route('logbooks.show', $entry) : ($week === $stats['next_week'] ? route('logbooks.create') : '#') }}"
-                               title="Week {{ $week }}: {{ $entry ? ($entry->isReviewed() ? 'Reviewed' : 'Pending review') : 'Not logged' }}"
+                               title="Week {{ $week }}: {{ $entry ? ($entry->isReviewed() ? 'Approved' : ($entry->needsRevision() ? 'Needs fixing' : 'Pending review')) : 'Not logged' }}"
                                @class([
                                    'flex aspect-square items-center justify-center rounded-xl text-sm font-semibold transition duration-200 hover:-translate-y-0.5 hover:shadow-md',
                                    'bg-emerald-500 text-white' => $entry?->isReviewed(),
-                                   'bg-amber-400 text-white' => $entry && ! $entry->isReviewed(),
+                                   'bg-orange-500 text-white' => $entry?->needsRevision(),
+                                   'bg-amber-400 text-white' => $entry?->isPending(),
                                    'border-2 border-dashed border-brand-500 bg-brand-50 text-brand-600' => ! $entry && $week === $stats['next_week'],
                                    'bg-zinc-100 text-zinc-400 pointer-events-none' => ! $entry && $week !== $stats['next_week'],
                                ])>{{ $week }}</a>
                         @endforeach
                     </div>
                     <div class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-zinc-500">
-                        <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span> Reviewed</span>
+                        <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span> Approved</span>
+                        <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-orange-500"></span> Needs fixing</span>
                         <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span> Pending</span>
                         <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full ring-2 ring-brand-500"></span> Next</span>
                         <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-zinc-200"></span> Not logged</span>

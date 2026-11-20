@@ -17,7 +17,8 @@ class DashboardController extends Controller
             : $user->logbooks();
 
         $total = (clone $logbooks)->count();
-        $reviewed = (clone $logbooks)->whereNotNull('logbooks.reviewed_at')->count();
+        $reviewed = (clone $logbooks)->where('logbooks.status', Logbook::STATUS_APPROVED)->count();
+        $revision = (clone $logbooks)->where('logbooks.status', Logbook::STATUS_REVISION)->count();
 
         $recent = (clone $logbooks)
             ->with('student')
@@ -31,7 +32,8 @@ class DashboardController extends Controller
             'stats' => [
                 'total' => $total,
                 'reviewed' => $reviewed,
-                'pending' => $total - $reviewed,
+                'pending' => $total - $reviewed - $revision,
+                'revision' => $revision,
                 'students' => $user->isSupervisor() ? $user->students()->count() : null,
                 'weeks' => Logbook::MAX_WEEKS,
                 'next_week' => $user->isStudent() ? $user->nextLogbookWeek() : null,

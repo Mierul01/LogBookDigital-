@@ -121,6 +121,56 @@
             <span class="hidden shrink-0 items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-600 xl:inline-flex">
                 <x-icon name="calendar" class="h-3.5 w-3.5 text-zinc-400" /> {{ now()->format('D, j M Y') }}
             </span>
+            {{-- Notifications --}}
+            @php
+                $unreadCount = $user->unreadNotifications()->count();
+                $notifications = $user->notifications()->latest()->take(8)->get();
+            @endphp
+            <details class="group relative shrink-0" data-dropdown>
+                <summary class="icon-btn relative flex cursor-pointer list-none items-center [&::-webkit-details-marker]:hidden" aria-label="Notifications">
+                    <x-icon name="bell" />
+                    @if ($unreadCount)
+                        <span class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ukm-red px-1 text-[10px] font-bold text-white ring-2 ring-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                    @endif
+                </summary>
+                <div class="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] origin-top-right animate-scale-in overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_20px_40px_-12px_rgba(16,24,40,0.25)]">
+                    <div class="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
+                        <p class="text-sm font-semibold">Notifications</p>
+                        @if ($unreadCount)
+                            <form method="POST" action="{{ route('notifications.read-all') }}">
+                                @csrf
+                                <button type="submit" class="text-xs font-semibold text-brand-600 hover:text-brand-800">Mark all read</button>
+                            </form>
+                        @endif
+                    </div>
+                    <ul class="max-h-96 divide-y divide-zinc-100 overflow-y-auto">
+                        @forelse ($notifications as $note)
+                            @php
+                                [$noteIcon, $noteTone] = match ($note->data['kind'] ?? '') {
+                                    'approved' => ['shield', 'bg-emerald-50 text-emerald-600'],
+                                    'revision' => ['pencil', 'bg-orange-50 text-orange-600'],
+                                    default => ['document', 'bg-brand-50 text-brand-600'],
+                                };
+                            @endphp
+                            <li>
+                                <a href="{{ route('notifications.open', $note->id) }}" @class(['flex gap-3 px-4 py-3 text-sm transition hover:bg-zinc-50', 'bg-brand-50/40' => ! $note->read_at])>
+                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg {{ $noteTone }}"><x-icon :name="$noteIcon" class="h-4 w-4" /></span>
+                                    <span class="min-w-0 flex-1">
+                                        <span @class(['block leading-snug', 'font-semibold text-zinc-900' => ! $note->read_at, 'text-zinc-600' => $note->read_at])>{{ $note->data['message'] ?? '' }}</span>
+                                        <span class="mt-0.5 block text-xs text-zinc-400">{{ $note->created_at->diffForHumans() }}</span>
+                                    </span>
+                                    @unless ($note->read_at)
+                                        <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-600"></span>
+                                    @endunless
+                                </a>
+                            </li>
+                        @empty
+                            <li class="px-4 py-8 text-center text-sm text-zinc-500">No notifications yet.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </details>
+
             @isset($actions)
                 <div class="flex shrink-0 items-center gap-2 [&_.btn]:px-3.5 [&_.btn]:py-2">{{ $actions }}</div>
             @endisset
