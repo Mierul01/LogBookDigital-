@@ -92,11 +92,6 @@
                     <div class="hidden shrink-0 items-center gap-6 md:flex">
                         <p class="max-w-44 text-sm leading-snug text-slate-200 italic">“Small steps every week lead to a finished project.”</p>
                         <div class="relative">
-                            <div class="absolute -top-3 -left-6 flex items-end gap-1 opacity-70">
-                                <span class="h-3 w-1.5 rounded-full bg-white/50"></span>
-                                <span class="h-5 w-1.5 rounded-full bg-white/60"></span>
-                                <span class="h-7 w-1.5 rounded-full bg-ukm-gold"></span>
-                            </div>
                             <span class="flex h-20 w-20 animate-float items-center justify-center rounded-3xl bg-gradient-to-br from-white/25 to-white/5 ring-1 ring-white/25 backdrop-blur">
                                 <x-icon name="book" class="h-10 w-10 text-white" />
                             </span>
